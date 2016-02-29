@@ -1,0 +1,85 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Driver", "Driver\Driver.csproj", "{AF6714B0-050A-4A3F-9075-09B286FAE20A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{757A2AE4-0445-4145-B776-A475688C4439}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blob", "Blob\Blob.csproj", "{80C0EB71-31A2-4A1E-86F5-11F99E1CA246}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableStorage", "TableStorage\TableStorage.csproj", "{3C52E75D-6093-4BC9-A4FA-FD5E65026FCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlServerDb", "SqlServerDb\SqlServerDb.csproj", "{69929BBE-0BA5-425E-9385-DA8A9A226380}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentDatabase", "DocumentDatabase\DocumentDatabase.csproj", "{E5C5BE99-495F-4C96-A8E4-859BA9D452A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventHub", "EventHub\EventHub.csproj", "{276F85C1-0E51-4802-AFDA-00C2EB10F96E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AF6714B0-050A-4A3F-9075-09B286FAE20A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF6714B0-050A-4A3F-9075-09B286FAE20A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF6714B0-050A-4A3F-9075-09B286FAE20A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF6714B0-050A-4A3F-9075-09B286FAE20A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{757A2AE4-0445-4145-B776-A475688C4439}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{757A2AE4-0445-4145-B776-A475688C4439}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{757A2AE4-0445-4145-B776-A475688C4439}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{757A2AE4-0445-4145-B776-A475688C4439}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80C0EB71-31A2-4A1E-86F5-11F99E1CA246}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80C0EB71-31A2-4A1E-86F5-11F99E1CA246}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80C0EB71-31A2-4A1E-86F5-11F99E1CA246}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80C0EB71-31A2-4A1E-86F5-11F99E1CA246}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C52E75D-6093-4BC9-A4FA-FD5E65026FCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C52E75D-6093-4BC9-A4FA-FD5E65026FCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C52E75D-6093-4BC9-A4FA-FD5E65026FCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C52E75D-6093-4BC9-A4FA-FD5E65026FCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69929BBE-0BA5-425E-9385-DA8A9A226380}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69929BBE-0BA5-425E-9385-DA8A9A226380}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69929BBE-0BA5-425E-9385-DA8A9A226380}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69929BBE-0BA5-425E-9385-DA8A9A226380}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5C5BE99-495F-4C96-A8E4-859BA9D452A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5C5BE99-495F-4C96-A8E4-859BA9D452A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5C5BE99-495F-4C96-A8E4-859BA9D452A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5C5BE99-495F-4C96-A8E4-859BA9D452A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{276F85C1-0E51-4802-AFDA-00C2EB10F96E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{276F85C1-0E51-4802-AFDA-00C2EB10F96E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{276F85C1-0E51-4802-AFDA-00C2EB10F96E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{276F85C1-0E51-4802-AFDA-00C2EB10F96E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 8
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://erichelin.visualstudio.com/defaultcollection
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = Blob\\Blob.csproj
+		SccProjectName1 = Blob
+		SccLocalPath1 = Blob
+		SccProjectUniqueName2 = Driver\\Driver.csproj
+		SccProjectName2 = Driver
+		SccLocalPath2 = Driver
+		SccProjectUniqueName3 = Shared\\Shared.csproj
+		SccProjectName3 = Shared
+		SccLocalPath3 = Shared
+		SccProjectUniqueName4 = TableStorage\\TableStorage.csproj
+		SccProjectName4 = TableStorage
+		SccLocalPath4 = TableStorage
+		SccProjectUniqueName5 = SqlServerDb\\SqlServerDb.csproj
+		SccProjectName5 = SqlServerDb
+		SccLocalPath5 = SqlServerDb
+		SccProjectUniqueName6 = DocumentDatabase\\DocumentDatabase.csproj
+		SccProjectName6 = DocumentDatabase
+		SccLocalPath6 = DocumentDatabase
+		SccProjectUniqueName7 = EventHub\\EventHub.csproj
+		SccProjectName7 = EventHub
+		SccLocalPath7 = EventHub
+	EndGlobalSection
+EndGlobal
