@@ -33,7 +33,7 @@ namespace Shared.dto.tablestorage
 
             if (string.IsNullOrEmpty(this.PartitionKey) || string.IsNullOrEmpty(this.RowKey))
             {
-                throw new System.Exception("Partition or row key is null or empty. Type:" + Type);
+                System.Console.WriteLine("Partition or row key is null or empty. Type:" + Type);
             }
         }
     }

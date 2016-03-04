@@ -59,7 +59,6 @@ namespace Shared.dto.EventHub
 
             return srch;
         }
-
         private void InsertRecord(Shared.dto.EventHub.SourceRecordEventHub u)
         {
             EventHubStorageCredentials ehsc = (EventHubStorageCredentials)Credentials;
@@ -96,7 +95,6 @@ namespace Shared.dto.EventHub
                 }
             }
         }
-
         private SourceRecord GetRecord(long id)
         {
             SqlConnection conn = null;
@@ -138,7 +136,7 @@ namespace Shared.dto.EventHub
                 {
                     if (tryCtr > 3)
                     {
-                        throw ex;
+                        Console.WriteLine("Error: " + ex.Message);
                     }
                     else
                         tryCtr++;

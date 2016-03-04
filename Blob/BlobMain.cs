@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Shared.dto.threading;
 using Shared.dto.blob;
 using Shared;
-using Shared.dto.source;
 using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Blob

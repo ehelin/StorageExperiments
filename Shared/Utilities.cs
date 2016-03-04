@@ -159,8 +159,6 @@ namespace Shared
 
         public static CloudTable GetTableStorageContainer(bool create, string azureConnectionString, string azureTableStorageTable)
         {
-            Console.WriteLine("Getting azure cloud client...");
-
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(azureConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
 
@@ -172,8 +170,6 @@ namespace Shared
         }
         public static CloudTableClient GetTableStorageClient(string azureConnectionString)
         {
-            Console.WriteLine("Getting azure cloud client...");
-
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(azureConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
 
@@ -182,8 +178,6 @@ namespace Shared
 
         public static CloudBlobClient GetBlobStorageClient(string azureConnectionString)
         {
-            Console.WriteLine("Getting blob client...");
-
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(azureConnectionString);
             CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
 
@@ -200,12 +194,10 @@ namespace Shared
 
             return blob;
         }
-
         public static DocumentClient GetDocumentDbClient(string url, string key)
         {
             Uri uri = new Uri(url);
-            //ConnectionPolicy connectionPolicy = new ConnectionPolicy { UserAgentSuffix = " samples-net/2" };
-            DocumentClient dc = new DocumentClient(uri, key);//, connectionPolicy);
+            DocumentClient dc = new DocumentClient(uri, key);
 
             return dc;
         }

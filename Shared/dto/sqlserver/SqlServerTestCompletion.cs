@@ -15,6 +15,7 @@ namespace Shared.dto.SqlServer
             SqlCommand cmd = Utilities.GetCommand(ssc);
             cmd.CommandType = System.Data.CommandType.Text;
             cmd.CommandText = "select count(*) from [dbo].[Updates]";
+            cmd.CommandTimeout = 600000000;         //required because of the size of the tables
             SqlDataReader dr = cmd.ExecuteReader();
             string result = string.Empty;
 

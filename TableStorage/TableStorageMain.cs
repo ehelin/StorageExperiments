@@ -63,9 +63,6 @@ namespace TableStorage
                 DeleteAllContainers();
                 System.Threading.Thread.Sleep(300000);                    //wait for all containers to be deleted (5 minutes)
             }
-
-            //TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)Credentials;
-            //CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, true);
         }
         private void DeleteAllFiles()
         {

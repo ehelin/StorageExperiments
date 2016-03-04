@@ -49,6 +49,8 @@ namespace Shared.dto
             HandleExit();
         }
 
+
+
         protected void HandleExit()
         {
             //HACK:  System exit call made when all threads are done in the thread completion event
@@ -91,13 +93,10 @@ namespace Shared.dto
             else if (this.StorageType == Enumeration.StorageTypes.TableStorage)
                 return new TableStorageLoadThreadJob(tc, this.Credentials, recordCount, startId, threadCnt);
 
-            else if (this.StorageType == Enumeration.StorageTypes.DocumentDb)
-                return new DocumentDbLoadThreadJob(tc, this.Credentials, recordCount, startId, threadCnt);
-
             else
                 throw new Exception("unknown thread job");
         }
-        
+
         protected void SetRecordCountTotal()
         {
             Database db = new Database();

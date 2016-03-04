@@ -24,30 +24,30 @@ namespace Shared.dto.SqlServer
             int ctr = 0;
 
             Console.WriteLine("Thread " + threadId + " starting with " + this.recordCount.ToString() + " records! " + DateTime.Now.ToString());
-            
-            try
-            {
-                cmd = Utilities.GetCommand(this.Credentials);
-                cmd.CommandType = System.Data.CommandType.Text;
-                cmd.CommandText = "INSERT INTO [dbo].[Updates] select @type, @data, @created";
 
-                while (ctr <= this.recordCount)
+            while (ctr <= this.recordCount)
+            {
+                try
                 {
+                    cmd = Utilities.GetCommand(this.Credentials);
+                    cmd.CommandType = System.Data.CommandType.Text;
+                    cmd.CommandText = "INSERT INTO [dbo].[Updates] select @type, @data, @created";
+
                     SourceRecord sr = db.GetRecord(startId);
 
                     InsertRecord(sr, cmd);
-
-                    startId++;
-                    ctr++;
                 }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-                Utilities.CloseCmd(cmd);
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
+                }
+                finally
+                {
+                    Utilities.CloseCmd(cmd);
+                }
+
+                startId++;
+                ctr++;
             }
 
             Console.WriteLine("Thread " + threadId + " Done! " + DateTime.Now.ToString());

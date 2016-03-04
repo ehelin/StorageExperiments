@@ -14,7 +14,7 @@ namespace Shared.dto.documentdb
         public override void HandleTestComplete(DataStorageCredentials Credentials)
         {
             //TestComplete.RunUpdateCount();
-            
+
             DocumentDbDataStorageCredentials dddsc = (DocumentDbDataStorageCredentials)Credentials;
             DocumentClient dc = Utilities.GetDocumentDbClient(dddsc.url, dddsc.key);
             var databaseCount = dc.CreateDatabaseQuery().ToList();
@@ -22,15 +22,21 @@ namespace Shared.dto.documentdb
 
             var collectionCount = dc.CreateDocumentCollectionQuery(azureDb.SelfLink).ToList();
 
-            DocumentCollection update = dc.CreateDocumentCollectionQuery(azureDb.SelfLink).Where(c => c.Id == DocumentDbConstants.DOCUMENT_DB_COLLECTION_NAME).ToArray().FirstOrDefault();
+            int ctr = 1;
+            long recordCount = 0;
+            while (ctr <= 32)
+            {
+                DocumentCollection update = dc.CreateDocumentCollectionQuery(azureDb.SelfLink).Where(c => c.Id == DocumentDbConstants.DOCUMENT_DB_COLLECTION_NAME + ctr.ToString()).ToArray().FirstOrDefault();
 
-            var documentCount = dc.CreateDocumentQuery(update.SelfLink, "SELECT * FROM c").ToList();
+                var documentCount = dc.CreateDocumentQuery(update.SelfLink, "SELECT * FROM c").ToList();
+                recordCount = recordCount + Convert.ToInt64(documentCount);
 
-            Console.WriteLine("There are " + documentCount.Count().ToString() + " records!");
+                ctr++;
+            }
+
+            Console.WriteLine("There are " + recordCount.ToString() + " records!");
         }
-
-        //TODO - can I have these methods in one place without breaking the threads?
-        //http://www.drdobbs.com/cloud/azure-documentdb-working-with-microsofts/240168992
+        
         private async Task<DocumentCollection> GetCollection(DocumentClient dc, Microsoft.Azure.Documents.Database db)
         {
             DocumentCollection col = null;
@@ -51,7 +57,6 @@ namespace Shared.dto.documentdb
 
             return col;
         }
-
         private async Task<Microsoft.Azure.Documents.Database> GetDatabase(Microsoft.Azure.Documents.Client.DocumentClient client)
         {
             IEnumerable<Microsoft.Azure.Documents.Database> query = from db in client.CreateDatabaseQuery()

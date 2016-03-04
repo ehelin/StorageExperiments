@@ -3,7 +3,6 @@ using Blob;
 using TableStorage;
 using SqlServerDb;
 using DocumentDatabase;
-using EventHub;
 
 namespace Driver
 {
@@ -59,7 +58,7 @@ namespace Driver
             string EndpointUrl = "";
             string AuthorizationKey = "";
 
-            DocumentDatabaseMain ddm = new DocumentDatabaseMain(EndpointUrl, AuthorizationKey, 1, 23310144, true, true);
+            DocumentDatabaseMain ddm = new DocumentDatabaseMain(EndpointUrl, AuthorizationKey, 5, 23310144, true, false);
             ddm.Run();
 
             Console.WriteLine("Document Db Done! " + DateTime.Now.ToString());
@@ -71,7 +70,7 @@ namespace Driver
             string eventHub = "";
             string eventHubName = "satellitehub";
 
-            EventHub.EventHub eh = new EventHub.EventHub(eventHub, eventHubName, 1, 100);
+            EventHub.EventHub eh = new EventHub.EventHub(eventHub, eventHubName, 32, 23310144);
             eh.Run();
 
             Console.WriteLine("Event Hub Done! " + DateTime.Now.ToString());

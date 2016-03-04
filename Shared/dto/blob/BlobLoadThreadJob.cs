@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.ComponentModel;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Shared.dto.source;

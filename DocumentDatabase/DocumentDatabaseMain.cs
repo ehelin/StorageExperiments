@@ -8,15 +8,7 @@ using Microsoft.Azure.Documents.Client;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents.Linq;
 using System.Linq;
-
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
-using Microsoft.Azure.Documents.Linq;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DocumentDatabase
 {
@@ -52,23 +44,44 @@ namespace DocumentDatabase
 
         public void Run()
         {
-            Setup();
             RunExample();
         }
-        
-        private void Setup()
+
+        protected override void RunExample()
         {
+            long recordsPerThread = TotalRecordCount / MaxThreadsAllowed;
+            int threadCnt = 1;
+            long curStartId = 1;
+            long curEndId = recordsPerThread;
             DocumentDbDataStorageCredentials dddss = (DocumentDbDataStorageCredentials)Credentials;
             DocumentClient dc = Utilities.GetDocumentDbClient(dddss.url, dddss.key);
             Database docDb = GetDatabase(dc).Result;
-            DocumentCollection col = GetCollection(dc, docDb).Result;
-        }
 
-        private async Task<DocumentCollection> GetCollection(DocumentClient dc, Database db)
-        {
-            DocumentCollection col = await dc.CreateDocumentCollectionAsync(db.SelfLink, new DocumentCollection { Id = DocumentDbConstants.DOCUMENT_DB_COLLECTION_NAME });
+            while (threadCnt <= MaxThreadsAllowed)
+            {
 
-            return col;
+                Console.WriteLine("Createing " + threadCnt.ToString() + " starting with " + recordsPerThread.ToString() + " records! " + DateTime.Now.ToString());
+
+                if (threadCnt > 1)
+                {
+                    curStartId = curStartId + recordsPerThread;
+                    curEndId = curEndId + recordsPerThread;
+                }
+
+                ThreadCompletion tc = new ThreadCompletion();
+                ThreadJob tj = new DocumentDbLoadThreadJob(tc, this.Credentials, recordsPerThread, curStartId, threadCnt, docDb);
+                this.DataJobs.Add(tj);
+                this.ThreadsComplete.Add(tc);
+
+                System.Threading.Thread.Sleep(5000);
+
+                threadCnt++;
+            }
+
+            foreach (ThreadJob tj in DataJobs)
+                tj.Execute();
+
+            HandleExit();
         }
 
         private async Task<Database> GetDatabase(DocumentClient client)
@@ -82,7 +95,7 @@ namespace DocumentDatabase
             {
                 var result = await client.DeleteDatabaseAsync(database.SelfLink);
             }
-            
+
             database = await client.CreateDatabaseAsync(new Database { Id = DocumentDbConstants.DOCUMENT_DB_NAME });
 
             return database;

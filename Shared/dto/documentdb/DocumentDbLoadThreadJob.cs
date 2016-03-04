@@ -4,7 +4,6 @@ using System.ComponentModel;
 using Shared.dto.source;
 using Microsoft.Azure.Documents.Client;
 using System.Data.SqlClient;
-using System.Collections.Generic;
 using Microsoft.Azure.Documents;
 using System.Threading.Tasks;
 using System.Linq;
@@ -12,26 +11,29 @@ using Microsoft.Azure.Documents.Linq;
 
 namespace Shared.dto.documentdb
 {
-    //https://azure.microsoft.com/en-us/documentation/articles/documentdb-create-account/ 
     public class DocumentDbLoadThreadJob : ThreadJob
     {
+        private Microsoft.Azure.Documents.Database docDb = null;
+
         public DocumentDbLoadThreadJob() : base() { }
 
         public DocumentDbLoadThreadJob(ThreadCompletion pDone,
                                  DataStorageCredentials pCredentials,
                                  long recordCount,
                                  long startId,
-                                 int threadId) : base(pDone, pCredentials, recordCount, startId, threadId)
-        {}
+                                 int threadId,
+                                 Microsoft.Azure.Documents.Database pDocDb)
+            : base(pDone, pCredentials, recordCount, startId, threadId)
+        {
+            docDb = pDocDb;
+        }
 
         public override async void DoWork(object sender, DoWorkEventArgs e)
         {
-            DocumentDbDataStorageCredentials dddsc = (DocumentDbDataStorageCredentials)Credentials;
-            DocumentClient dc = Utilities.GetDocumentDbClient(dddsc.url, dddsc.key);
-            Microsoft.Azure.Documents.Database docDb = GetDatabase(dc).Result;
-            DocumentCollection docCol = GetCollection(dc, docDb).Result;
             int ctr = 0;
-
+            DocumentDbDataStorageCredentials dddss = (DocumentDbDataStorageCredentials)Credentials;
+            DocumentClient dc = Utilities.GetDocumentDbClient(dddss.url, dddss.key);
+            DocumentCollection dCol = GetCollection(dc, docDb, this.threadId).Result;
             Console.WriteLine("Thread " + threadId + " starting with " + this.recordCount.ToString() + " records! " + DateTime.Now.ToString());
 
             while (ctr <= this.recordCount)
@@ -41,7 +43,8 @@ namespace Shared.dto.documentdb
 
                 if (u != null)
                 {
-                    bool created = InsertDocument(u, dc, docDb.Id, docCol.Id).Result;
+                    bool created = InsertDocument(u, dc, docDb.Id, dCol.Id).Result;
+                    System.Threading.Thread.Sleep(2000);
                 }
 
                 startId++;
@@ -70,46 +73,10 @@ namespace Shared.dto.documentdb
             }
             catch (Exception e)
             {
-                throw e;
+                Console.WriteLine("Error: " + ex.Message);
             }
 
             return created;
-        }
-
-        //http://www.drdobbs.com/cloud/azure-documentdb-working-with-microsofts/240168992
-        private async Task<DocumentCollection> GetCollection(DocumentClient dc, Microsoft.Azure.Documents.Database db)
-        {
-            DocumentCollection col = null;
-
-            try
-            {
-                col = dc.CreateDocumentCollectionQuery(db.SelfLink).Where(c => c.Id == DocumentDbConstants.DOCUMENT_DB_COLLECTION_NAME).ToArray().FirstOrDefault();
-                
-                if (col == null)
-                {
-                    col = await dc.CreateDocumentCollectionAsync(db.SelfLink, new DocumentCollection { Id = DocumentDbConstants.DOCUMENT_DB_COLLECTION_NAME });
-                }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-
-            return col;
-        }
-        private async Task<Microsoft.Azure.Documents.Database> GetDatabase(Microsoft.Azure.Documents.Client.DocumentClient client)
-        {
-            IEnumerable<Microsoft.Azure.Documents.Database> query = from db in client.CreateDatabaseQuery()
-                                          where db.Id == DocumentDbConstants.DOCUMENT_DB_NAME
-                                          select db;
-
-            Microsoft.Azure.Documents.Database database = query.FirstOrDefault();
-            if (database == null)
-            {
-                database = await client.CreateDatabaseAsync(new Microsoft.Azure.Documents.Database { Id = DocumentDbConstants.DOCUMENT_DB_NAME });
-            }
-
-            return database;
         }
         private SourceRecord GetRecord(long id)
         {
@@ -164,6 +131,26 @@ namespace Shared.dto.documentdb
             }
 
             return record;
+        }
+        private async Task<DocumentCollection> GetCollection(DocumentClient dc, Microsoft.Azure.Documents.Database db, long threadId)
+        {
+            DocumentCollection col = null;
+
+            try
+            {
+                col = dc.CreateDocumentCollectionQuery(db.SelfLink).Where(c => c.Id == DocumentDbConstants.DOCUMENT_DB_COLLECTION_NAME + threadId.ToString()).ToArray().FirstOrDefault();
+
+                if (col == null)
+                {
+                    col = await dc.CreateDocumentCollectionAsync(db.SelfLink, new DocumentCollection { Id = DocumentDbConstants.DOCUMENT_DB_COLLECTION_NAME + threadId.ToString() });
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            return col;
         }
     }
 }
