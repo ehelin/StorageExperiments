@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Data.SqlClient;
+using System.Collections.Generic;
 
 namespace Shared.dto.source
 {
     public class Database
     {
-        public SourceRecord GetRecord(long id)
+        public IList<SourceRecord> GetRecord(long startId, long endId)
         {
             SqlConnection conn = null;
             SqlCommand cmd = null;
             SqlDataReader rdr = null;
-            SourceRecord record = null;
+            IList<SourceRecord> srcRecords = new List<SourceRecord>();
 
             try
             {
@@ -20,22 +21,24 @@ namespace Shared.dto.source
                 cmd.CommandText = SourceDataConstants.SQL_GET_RECORD_ID;
                 cmd.CommandType = System.Data.CommandType.Text;
 
-                cmd.Parameters.Add(new SqlParameter("@id", id));
+                cmd.Parameters.Add(new SqlParameter("@startId", startId));
+                cmd.Parameters.Add(new SqlParameter("@endId", endId));
 
                 cmd.Connection.Open();
 
                 rdr = cmd.ExecuteReader();
 
-                if (rdr.Read())
+                while (rdr.Read())
                 {
-                    record = new SourceRecord();
+                    SourceRecord record = new SourceRecord();
 
                     record.Id = Utilities.GetSafeInt(rdr[0]);
                     record.Type = Utilities.GetSafeString(rdr[1]);
                     record.Data = Utilities.GetSafeString(rdr[2]);
                     record.Created = Utilities.GetSafeDate(rdr[3]);
-                }
 
+                    srcRecords.Add(record);
+                }
             }
             catch (Exception ex)
             {
@@ -46,7 +49,7 @@ namespace Shared.dto.source
                 Utilities.CloseDbObjects(conn, cmd, rdr, null);
             }
 
-            return record;
+            return srcRecords;
         }
         public long GetSourcRecordCount()
         {

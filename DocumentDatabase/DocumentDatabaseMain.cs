@@ -28,9 +28,6 @@ namespace DocumentDatabase
         {
             this.Credentials = new DocumentDbDataStorageCredentials(pUrl, pKey);
             this.StorageType = Enumeration.StorageTypes.DocumentDb;
-            this.DataJobs = new List<ThreadJob>();
-            this.ThreadsComplete = new List<ThreadCompletion>();
-            this.testCompletion = new DocumentDbTestCompletion();
             this.MaxThreadsAllowed = pMaxThreads;
 
             if (sourceRecordTotal > 0)
@@ -47,41 +44,24 @@ namespace DocumentDatabase
             RunExample();
         }
 
+        //NOTE - Document db implementation not really tested.
         protected override void RunExample()
         {
+            List<Task> tasks = new List<Task>();
             long recordsPerThread = TotalRecordCount / MaxThreadsAllowed;
             int threadCnt = 1;
             long curStartId = 1;
             long curEndId = recordsPerThread;
+
             DocumentDbDataStorageCredentials dddss = (DocumentDbDataStorageCredentials)Credentials;
             DocumentClient dc = Utilities.GetDocumentDbClient(dddss.url, dddss.key);
             Database docDb = GetDatabase(dc).Result;
 
-            while (threadCnt <= MaxThreadsAllowed)
-            {
+            //ThreadJob tj = GetThreadJob(threadCnt, recordsPerThread, curStartId);
+            ThreadJob tj = new DocumentDbLoadThreadJob(this.Credentials, recordsPerThread, curStartId, threadCnt, docDb);
+            tj.LaunchThreads();
 
-                Console.WriteLine("Createing " + threadCnt.ToString() + " starting with " + recordsPerThread.ToString() + " records! " + DateTime.Now.ToString());
-
-                if (threadCnt > 1)
-                {
-                    curStartId = curStartId + recordsPerThread;
-                    curEndId = curEndId + recordsPerThread;
-                }
-
-                ThreadCompletion tc = new ThreadCompletion();
-                ThreadJob tj = new DocumentDbLoadThreadJob(tc, this.Credentials, recordsPerThread, curStartId, threadCnt, docDb);
-                this.DataJobs.Add(tj);
-                this.ThreadsComplete.Add(tc);
-
-                System.Threading.Thread.Sleep(5000);
-
-                threadCnt++;
-            }
-
-            foreach (ThreadJob tj in DataJobs)
-                tj.Execute();
-
-            HandleExit();
+            Console.Read();    //wait for developer to close application  
         }
 
         private async Task<Database> GetDatabase(DocumentClient client)

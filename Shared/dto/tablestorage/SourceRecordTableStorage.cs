@@ -23,7 +23,7 @@ namespace Shared.dto.tablestorage
             if (!string.IsNullOrEmpty(Type))
             {
                 string satelliteName = Type.Substring(0, Type.IndexOf("_"));
-                
+
                 string rowKey = satelliteName + "_" + Type + "_" + Id.ToString();
 
                 this.PartitionKey = satelliteName;

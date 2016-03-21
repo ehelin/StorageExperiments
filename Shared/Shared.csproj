@@ -91,14 +91,11 @@
     <Compile Include="Constants.cs" />
     <Compile Include="dto\blob\BlobDataStorageCredentials.cs" />
     <Compile Include="dto\blob\BlobLoadThreadJob.cs" />
-    <Compile Include="dto\blob\BlobTestCompletion.cs" />
     <Compile Include="dto\DataStorageCredentials.cs" />
     <Compile Include="dto\documentdb\DocumentDbDataStorageCredentials.cs" />
     <Compile Include="dto\documentdb\DocumentDbLoadThreadJob.cs" />
-    <Compile Include="dto\documentdb\DocumentDbTestCompletion.cs" />
     <Compile Include="dto\eventhub\EventHubLoadThreadJob.cs" />
     <Compile Include="dto\eventhub\EventHubStorageCredentials.cs" />
-    <Compile Include="dto\eventhub\EventHubTestCompletion.cs" />
     <Compile Include="dto\eventhub\SourceRecordEventHub.cs" />
     <Compile Include="dto\Main.cs" />
     <Compile Include="dto\source\Position.cs" />
@@ -109,16 +106,13 @@
     <Compile Include="dto\source\Update.cs" />
     <Compile Include="dto\sqlserver\SqlServerLoadThreadJob.cs" />
     <Compile Include="dto\sqlserver\SqlServerStorageCredentials.cs" />
-    <Compile Include="dto\sqlserver\SqlServerTestCompletion.cs" />
     <Compile Include="dto\tablestorage\SourceRecordTableStorage.cs" />
     <Compile Include="dto\tablestorage\TableStorageDataStorageCredentials.cs" />
     <Compile Include="dto\tablestorage\TableStorageLoadThreadJob.cs" />
-    <Compile Include="dto\tablestorage\TableStorageTestCompletion.cs" />
-    <Compile Include="dto\threading\TestComplete.cs" />
-    <Compile Include="dto\threading\ThreadCompletion.cs" />
     <Compile Include="dto\threading\ThreadJob.cs" />
     <Compile Include="Enumeration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimpleThreadAsyncAwaitExample.cs" />
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup />

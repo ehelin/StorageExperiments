@@ -3,6 +3,8 @@ using Shared.dto.threading;
 using System.ComponentModel;
 using System.Data.SqlClient;
 using Shared.dto.source;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Shared.dto.SqlServer
 {
@@ -10,58 +12,119 @@ namespace Shared.dto.SqlServer
     {
         public SqlServerLoadThreadJob() : base() { }
 
-        public SqlServerLoadThreadJob(ThreadCompletion pDone,
-                                     DataStorageCredentials pCredentials,
+        public SqlServerLoadThreadJob(DataStorageCredentials pCredentials,
                                      long recordCount,
                                      long startId,
-                                     int threadId) : base(pDone, pCredentials, recordCount, startId, threadId)
+                                     int threadId) : base(pCredentials, recordCount, startId, threadId)
         { }
 
-        public override void DoWork(object sender, DoWorkEventArgs e)
+        protected async override void RunLoad(int pThreadId, long pRecordCount, DataStorageCredentials pCredentials, long pStartId, long pEndPoint)
+        {
+            LoadRecords(pThreadId, pRecordCount, pCredentials, pStartId, pEndPoint);
+        }
+
+        private async void LoadRecords(int pThreadId, long pRecordCount, DataStorageCredentials pCredentials, long pStartId, long pEndPoint)
         {
             Database db = new Database();
-            SqlCommand cmd = null;
-            int ctr = 0;
+            long threadId = pThreadId;
+            long recordCount = pRecordCount;
+            long startId = pStartId;
+            long endId = pEndPoint;
 
-            Console.WriteLine("Thread " + threadId + " starting with " + this.recordCount.ToString() + " records! " + DateTime.Now.ToString());
+            Console.WriteLine("Thread " + threadId + " starting with " + recordCount.ToString() + " records! " + DateTime.Now.ToString());
 
-            while (ctr <= this.recordCount)
+            while (startId <= endId)
             {
                 try
                 {
-                    cmd = Utilities.GetCommand(this.Credentials);
-                    cmd.CommandType = System.Data.CommandType.Text;
-                    cmd.CommandText = "INSERT INTO [dbo].[Updates] select @type, @data, @created";
+                    IList<SourceRecord> scrRecords = db.GetRecord(startId, endId);
 
-                    SourceRecord sr = db.GetRecord(startId);
-
-                    InsertRecord(sr, cmd);
+                    foreach (SourceRecord sr in scrRecords)
+                        InsertRecord(sr, pCredentials);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine("Error: " + ex.Message);
                 }
-                finally
-                {
-                    Utilities.CloseCmd(cmd);
-                }
 
-                startId++;
-                ctr++;
+                startId = startId + Convert.ToInt64(SourceDataConstants.SQL_GET_TOP_VALUE);
             }
 
             Console.WriteLine("Thread " + threadId + " Done! " + DateTime.Now.ToString());
         }
-
-        private void InsertRecord(SourceRecord sr, SqlCommand cmd)
+        protected override void GetRecordCount(DataStorageCredentials pCredentials)
         {
-            cmd.Parameters.Clear();
+            long recordCnt = 0;
+            SqlDataReader rdr = null;
+            SqlServerStorageCredentials credentials = (SqlServerStorageCredentials)pCredentials;
+            SqlCommand cmd = Utilities.GetCommand(credentials);
 
-            cmd.Parameters.Add(new SqlParameter("@type", sr.Type));
-            cmd.Parameters.Add(new SqlParameter("@data", sr.Data));
-            cmd.Parameters.Add(new SqlParameter("@created", sr.Created));
+            try
+            {
+                cmd.CommandType = System.Data.CommandType.Text;
+                cmd.CommandTimeout = 600000000;
+                cmd.CommandText = "select count(*) from [dbo].[Updates]";
 
-            cmd.ExecuteNonQuery();
+                rdr = cmd.ExecuteReader();
+
+                if (rdr.Read())
+                    recordCnt = Utilities.GetSafeLong(rdr[0]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+            finally
+            {
+                Utilities.CloseDbObjects(cmd.Connection, cmd, rdr, null);
+            }
+
+            Console.WriteLine("There were " + recordCnt.ToString() + " Inserted! " + DateTime.Now.ToString());
+        }
+        private void InsertRecord(SourceRecord sr, DataStorageCredentials pCredentials)
+        {
+            SqlCommand cmd = null;
+            bool inserted = false;
+            int errorTryCtr = 0;
+
+            while (!inserted)
+            {
+                try
+                {
+                    SqlServerStorageCredentials credentials = (SqlServerStorageCredentials)pCredentials;
+                    cmd = Utilities.GetCommand(credentials);
+                    cmd.CommandType = System.Data.CommandType.Text;
+                    cmd.CommandText = "INSERT INTO [dbo].[Updates] select @originalId, @type, @data, @created";
+
+                    cmd.Parameters.Clear();
+
+                    cmd.Parameters.Add(new SqlParameter("@originalId", sr.Id));
+                    cmd.Parameters.Add(new SqlParameter("@type", sr.Type));
+                    cmd.Parameters.Add(new SqlParameter("@data", sr.Data));
+                    cmd.Parameters.Add(new SqlParameter("@created", sr.Created));
+
+                    cmd.ExecuteNonQuery();
+
+                    inserted = true;
+                }
+                catch (Exception e)
+                {
+                    if (errorTryCtr > Constants.MAX_RETRY)
+                    {
+                        Console.WriteLine("SqlServerLoad - Max error limit reached...moving on");
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("SqlServerLoad ERROR: - " + e.Message);
+                        errorTryCtr++;
+                    }
+                }
+                finally
+                {
+                    Utilities.CloseCmd(cmd);
+                }
+            }
         }
     }
 }

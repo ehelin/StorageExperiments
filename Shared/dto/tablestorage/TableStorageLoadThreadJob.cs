@@ -1,13 +1,9 @@
 ﻿using System;
-using System.ComponentModel;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Auth;
+using System.Collections.Generic;
 using Microsoft.WindowsAzure.Storage.Table;
 using Shared.dto.source;
 using Shared.dto.threading;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Linq;
 
 namespace Shared.dto.tablestorage
 {
@@ -15,41 +11,96 @@ namespace Shared.dto.tablestorage
     {
         public TableStorageLoadThreadJob() : base() { }
 
-        public TableStorageLoadThreadJob(ThreadCompletion pDone,
-                                 DataStorageCredentials pCredentials,
+        public TableStorageLoadThreadJob(DataStorageCredentials pCredentials,
                                  long recordCount,
                                  long startId,
-                                 int threadId) : base(pDone, pCredentials, recordCount, startId, threadId)
+                                 int threadId) : base(pCredentials, recordCount, startId, threadId)
         { }
 
-        public override void DoWork(object sender, DoWorkEventArgs e)
+
+        protected async override void RunLoad(int pThreadId, long pRecordCount, DataStorageCredentials pCredentials, long pStartId, long pEndPoint)
+        {
+            LoadRecords(pThreadId, pRecordCount, pCredentials, pStartId, pEndPoint);
+        }
+
+        private async void LoadRecords(int pThreadId, long pRecordCount, DataStorageCredentials pCredentials, long pStartId, long pEndPoint)
         {
             Database db = new Database();
             TableStorageDataStorageCredentials tsdsc = (TableStorageDataStorageCredentials)Credentials;
             CloudTable table = Utilities.GetTableStorageContainer(true, tsdsc.azureConnectionString, tsdsc.azureContainerName);
-            int ctr = 0;
+            long threadId = pThreadId;
+            long recordCount = pRecordCount;
+            long startId = pStartId;
+            long endId = pEndPoint;
 
-            Console.WriteLine("Thread " + threadId + " starting with " + this.recordCount.ToString() + " records! " + DateTime.Now.ToString());
+            Console.WriteLine("Thread " + threadId + " starting with " + recordCount.ToString() + " records! " + DateTime.Now.ToString());
 
-            while (ctr <= this.recordCount)
+            while (startId <= endId)
             {
-                SourceRecord sr = db.GetRecord(startId);
-                SourceRecordTableStorage srts = new SourceRecordTableStorage();
-                srts.Id = sr.Id;
-                srts.Type = sr.Type;
-                srts.Created = sr.Created;
-                srts.Data = sr.Data;
-                srts.SetParitionKeyRowKey();
+                try
+                {
+                    IList<SourceRecord> scrRecords = db.GetRecord(startId, endId);
 
-                //TestComplete.updates.Add(sr);
-                TableOperation insertOperation = TableOperation.Insert(srts);
-                TableResult tr = table.Execute(insertOperation);
+                    foreach (SourceRecord sr in scrRecords)
+                    {
+                        SourceRecordTableStorage srts = new SourceRecordTableStorage();
+                        srts.Id = sr.Id;
+                        srts.Type = sr.Type;
+                        srts.Created = sr.Created;
+                        srts.Data = sr.Data;
+                        srts.SetParitionKeyRowKey();
 
-                startId++;
-                ctr++;
+                        //TestComplete.updates.Add(sr);
+                        InsertRecord(srts, table);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
+                }
+
+                startId = startId + Convert.ToInt64(SourceDataConstants.SQL_GET_TOP_VALUE);
             }
 
             Console.WriteLine("Thread " + threadId + " Done! " + DateTime.Now.ToString());
+        }
+        private void InsertRecord(SourceRecordTableStorage srts, CloudTable table)
+        {
+            int errorTryCtr = 0;
+
+            try
+            {
+                TableOperation insertOperation = TableOperation.Insert(srts);
+                TableResult tr = table.Execute(insertOperation);
+            }
+            catch (Exception e)
+            {
+                if (errorTryCtr > Constants.MAX_RETRY)
+                    Console.WriteLine("TableStorageLoad - Max error limit reached...moving on");
+                else
+                {
+                    Console.WriteLine("TableStorageLoad ERROR: - " + e.Message);
+                    errorTryCtr++;
+                }
+            }
+        }
+        protected override void GetRecordCount(DataStorageCredentials pCredentials)
+        {
+            TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)Credentials;
+            CloudTable table = Utilities.GetTableStorageContainer(false, tsc.azureConnectionString, tsc.azureContainerName);
+            List<long> updates = null;
+
+            try
+            {
+                updates = (from update in table.CreateQuery<SourceRecordTableStorage>()
+                           select update.Id).ToList<long>();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("ERROR: TableStorageLoadThreadJob.cs->GetRecordCount(args): " + e.Message);
+            }
+
+            Console.WriteLine("There are " + updates.Count() + " records!");
         }
     }
 }

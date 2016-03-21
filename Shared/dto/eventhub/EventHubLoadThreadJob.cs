@@ -1,15 +1,8 @@
 ﻿using System;
-using System.ComponentModel;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Shared.dto.source;
 using Shared.dto.threading;
-using Microsoft.WindowsAzure;
 using Microsoft.ServiceBus.Messaging;
-using Microsoft.ServiceBus;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Data.SqlClient;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Shared.dto.EventHub
@@ -18,36 +11,51 @@ namespace Shared.dto.EventHub
     {
         public EventHubLoadThreadJob() : base() { }
 
-        public EventHubLoadThreadJob(ThreadCompletion pDone,
-                                 DataStorageCredentials pCredentials,
+        public EventHubLoadThreadJob(DataStorageCredentials pCredentials,
                                  long recordCount,
                                  long startId,
-                                 int threadId) : base(pDone, pCredentials, recordCount, startId, threadId)
+                                 int threadId) : base(pCredentials, recordCount, startId, threadId)
         { }
 
-        public override void DoWork(object sender, DoWorkEventArgs e)
+
+        protected async override void RunLoad(int pThreadId, long pRecordCount, DataStorageCredentials pCredentials, long pStartId, long pEndPoint)
         {
-            int ctr = 0;
+            LoadRecords(pThreadId, pRecordCount, pCredentials, pStartId, pEndPoint);
+        }
 
-            Console.WriteLine("Thread " + threadId + " starting with " + this.recordCount.ToString() + " records! " + DateTime.Now.ToString());
+        private async void LoadRecords(int pThreadId, long pRecordCount, DataStorageCredentials pCredentials, long pStartId, long pEndPoint)
+        {
+            Database db = new Database();
+            long threadId = pThreadId;
+            long recordCount = pRecordCount;
+            long startId = pStartId;
+            long endId = pEndPoint;
 
-            while (ctr <= this.recordCount)
+            Console.WriteLine("Thread " + threadId + " starting with " + recordCount.ToString() + " records! " + DateTime.Now.ToString());
+
+            while (startId <= endId)
             {
-                SourceRecord sr = GetRecord(startId);
+                try
+                {
+                    IList<SourceRecord> scrRecords = db.GetRecord(startId, endId);
 
-                if (sr == null)
-                    break;
+                    foreach (SourceRecord sr in scrRecords)
+                    {
+                        SourceRecordEventHub srch = ConvertSourceRecord(sr);
+                        //InsertRecord(srch);
+                        InsertRecordAsycn(srch);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
+                }
 
-                SourceRecordEventHub srch = ConvertSourceRecord(sr);                
-                InsertRecord(srch);
-
-                startId++;
-                ctr++;
+                startId = startId + Convert.ToInt64(SourceDataConstants.SQL_GET_TOP_VALUE);
             }
 
             Console.WriteLine("Thread " + threadId + " Done! " + DateTime.Now.ToString());
         }
-
         private SourceRecordEventHub ConvertSourceRecord(SourceRecord sr)
         {
             SourceRecordEventHub srch = new SourceRecordEventHub();
@@ -59,6 +67,58 @@ namespace Shared.dto.EventHub
 
             return srch;
         }
+        private void InsertRecordAsycn(Shared.dto.EventHub.SourceRecordEventHub u)
+        {
+            EventHubStorageCredentials ehsc = (EventHubStorageCredentials)Credentials;
+            EventHubClient client = EventHubClient.CreateFromConnectionString(ehsc.eventHub, ehsc.eventHubName);
+            var serializedString = JsonConvert.SerializeObject(u);
+
+            EventData data = new EventData(System.Text.Encoding.UTF8.GetBytes(serializedString))
+            {
+                PartitionKey = "$Default"
+            };
+
+            data.Properties.Add("Type", "SatelliteUpdate");
+
+            int errorTryCtr = 0;
+            bool isSent = false;
+            while (!isSent)
+            {
+                try
+                {
+                    client.SendAsync(data);
+                    isSent = true;
+                }
+                catch (Exception e)
+                {
+                    if (errorTryCtr > Constants.MAX_RETRY)
+                    {
+                        Console.WriteLine("EventHub - Max error limit reached...moving on");
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("EventHub ERROR: - " + e.Message);
+                        errorTryCtr++;
+                    }
+                }
+                finally
+                {
+                    if (data != null)
+                    {
+                        data.Dispose();
+                        data = null;
+                    }
+
+                    if (client != null)
+                    {
+                        client.Close();
+                        client = null;
+                    }
+                }
+            }
+        }
+
         private void InsertRecord(Shared.dto.EventHub.SourceRecordEventHub u)
         {
             EventHubStorageCredentials ehsc = (EventHubStorageCredentials)Credentials;
@@ -72,82 +132,48 @@ namespace Shared.dto.EventHub
 
             data.Properties.Add("Type", "SatelliteUpdate");
 
-            try
-            {
-                client.Send(data);
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                if (data != null)
-                {
-                    data.Dispose();
-                    data = null;
-                }
-
-                if (client != null)
-                {
-                    client.Close();
-                    client = null;
-                }
-            }
-        }
-        private SourceRecord GetRecord(long id)
-        {
-            SqlConnection conn = null;
-            SqlCommand cmd = null;
-            SqlDataReader rdr = null;
-            SourceRecord record = null;
-            bool cont = true;
-            int tryCtr = 0;
-
-            while (cont)
+            int errorTryCtr = 0;
+            bool isSent = false;
+            while (!isSent)
             {
                 try
                 {
-                    conn = new SqlConnection(SourceDataConstants.DB_CONNECTION);
-                    cmd = conn.CreateCommand();
-                    cmd.CommandTimeout = SourceDataConstants.DB_TIMEOUT;
-                    cmd.CommandText = SourceDataConstants.SQL_GET_RECORD_ID;
-                    cmd.CommandType = System.Data.CommandType.Text;
 
-                    cmd.Parameters.Add(new System.Data.SqlClient.SqlParameter("@id", id));
-
-                    cmd.Connection.Open();
-
-                    rdr = cmd.ExecuteReader();
-
-                    if (rdr.Read())
-                    {
-                        record = new SourceRecord();
-
-                        record.Id = Utilities.GetSafeInt(rdr[0]);
-                        record.Type = Utilities.GetSafeString(rdr[1]);
-                        record.Data = Utilities.GetSafeString(rdr[2]);
-                        record.Created = Utilities.GetSafeDate(rdr[3]);
-                    }
-
-                    cont = false;
+                    client.Send(data);
+                    isSent = true;
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    if (tryCtr > 3)
+                    if (errorTryCtr > Constants.MAX_RETRY)
                     {
-                        Console.WriteLine("Error: " + ex.Message);
+                        Console.WriteLine("EventHub - Max error limit reached...moving on");
+                        break;
                     }
                     else
-                        tryCtr++;
+                    {
+                        Console.WriteLine("EventHub ERROR: - " + e.Message);
+                        errorTryCtr++;
+                    }
                 }
                 finally
                 {
-                    Utilities.CloseDbObjects(conn, cmd, rdr, null);
+                    if (data != null)
+                    {
+                        data.Dispose();
+                        data = null;
+                    }
+
+                    if (client != null)
+                    {
+                        client.Close();
+                        client = null;
+                    }
                 }
             }
-
-            return record;
+        }
+        protected override void GetRecordCount(DataStorageCredentials pCredentials)
+        {
+            Console.WriteLine("Event Hub Total is not calculated.  Get from stream analytics job query - " + DateTime.Now.ToString());
         }
     }
 }

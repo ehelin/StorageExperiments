@@ -69,13 +69,31 @@ namespace Shared
 
             return result;
         }
+        public static Int64 GetSafeLong(object val)
+        {
+            Int64 result = 0;
+            Int64 valInt = 0;
+
+            if (val != DBNull.Value && val != null && val.ToString().Length > 0)
+            {
+                string valStr = val.ToString();
+                Int64.TryParse(valStr, out valInt);
+
+                if (valInt != 0)
+                    result = valInt;
+            }
+
+            return result;
+        }
         public static void CloseCmd(SqlCommand cmd)
         {
             if (cmd != null)
             {
                 if (cmd.Connection != null)
                 {
-                    cmd.Connection.Close();
+                    if (cmd.Connection.State == System.Data.ConnectionState.Open)
+                        cmd.Connection.Close();
+
                     cmd.Connection.Dispose();
                     cmd.Connection = null;
                 }
@@ -120,6 +138,22 @@ namespace Shared
 
         #region Serialize/Deserialize
 
+        public static string SerializeSourceRecord(SourceRecord sr)
+        {
+            string serializedValue = string.Empty;
+
+            serializedValue = JsonConvert.SerializeObject(sr);
+
+            return serializedValue;
+        }
+        public static SourceRecord DeserializeSourceRecord(string serializedValue)
+        {
+            SourceRecord sr = null;
+
+            sr = JsonConvert.DeserializeObject<SourceRecord>(serializedValue);
+
+            return sr;
+        }
         public static string SerializeStatus(Status s)
         {
             string serializedValue = string.Empty;

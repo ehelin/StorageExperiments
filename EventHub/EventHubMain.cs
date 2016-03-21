@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Shared.dto.threading;
-using Shared.dto.EventHub;
+﻿using Shared.dto.EventHub;
 using Shared;
-using Shared.dto.source;
 
 namespace EventHub
 {
@@ -16,9 +12,6 @@ namespace EventHub
         {
             this.Credentials = new EventHubStorageCredentials(pAzureConnectionString, pAzureContainerName);
             this.StorageType = Enumeration.StorageTypes.EventHub;
-            this.DataJobs = new List<ThreadJob>();
-            this.ThreadsComplete = new List<ThreadCompletion>();
-            this.testCompletion = new EventHubTestCompletion();
             this.MaxThreadsAllowed = pMaxThreads;
 
             if (sourceRecordTotal > 0)

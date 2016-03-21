@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using Shared.dto.threading;
 using Shared.dto.blob;
 using Shared;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -21,9 +19,6 @@ namespace Blob
         {
             this.Credentials = new BlobDataStorageCredentials(pAzureConnectionString, pAzureContainerName);
             this.StorageType = Enumeration.StorageTypes.Blob;
-            this.DataJobs = new List<ThreadJob>();
-            this.ThreadsComplete = new List<ThreadCompletion>();
-            this.testCompletion = new BlobTestCompletion();
             this.MaxThreadsAllowed = pMaxThreads;
 
             if (sourceRecordTotal > 0)
@@ -42,7 +37,7 @@ namespace Blob
         }
 
         #region Setup
-        
+
         private void Setup()
         {
             if (this.DeleteFiles)
@@ -55,6 +50,7 @@ namespace Blob
                 System.Threading.Thread.Sleep(300000);                    //wait for all containers to be deleted (5 minutes)
             }
 
+            //recreate blob container
             BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)Credentials;
             CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, true);
         }
