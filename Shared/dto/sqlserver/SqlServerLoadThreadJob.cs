@@ -94,7 +94,15 @@ namespace Shared.dto.SqlServer
                     SqlServerStorageCredentials credentials = (SqlServerStorageCredentials)pCredentials;
                     cmd = Utilities.GetCommand(credentials);
                     cmd.CommandType = System.Data.CommandType.Text;
-                    cmd.CommandText = "INSERT INTO [dbo].[Updates] select @originalId, @type, @data, @created";
+                    cmd.CommandText = "if not exists(select originalId  "
+                                       + " from dbo.Updates  "
+                                        + "  where originalId = @originalId  "
+                                        + "  or[type] = @type  "
+                                        + "  or data = @data  "
+                                        + "  or created = @created)  "
+                                        + "  begin  "
+                                            + "  INSERT INTO[dbo].[Updates] select @originalId, @type, @data, @created  "
+                                        + "  end ";
 
                     cmd.Parameters.Clear();
 
