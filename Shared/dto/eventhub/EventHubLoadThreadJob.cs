@@ -171,7 +171,8 @@ namespace Shared.dto.EventHub
                 }
             }
         }
-        protected override void GetRecordCount(DataStorageCredentials pCredentials)
+
+        protected override void RunCountQueries(DataStorageCredentials pCredentials)
         {
             Console.WriteLine("Event Hub Total is not calculated.  Get from stream analytics job query - " + DateTime.Now.ToString());
         }

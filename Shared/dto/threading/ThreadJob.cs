@@ -10,6 +10,8 @@ namespace Shared.dto.threading
         protected long startId = 0;
         protected int threadId = 0;
 
+        protected long TestRecordId = 233101; 
+
         public ThreadJob() { }
 
         public ThreadJob(DataStorageCredentials pCredentials,
@@ -161,11 +163,12 @@ namespace Shared.dto.threading
 
             await Task.WhenAll(tasks);
 
-            GetRecordCount(this.Credentials);
+            RunCountQueries(this.Credentials);
         }
 
         protected async virtual void RunLoad(int pThreadId, long pRecordCount, DataStorageCredentials pCredentials, long pStartId, long pEndPoint) { }
-        protected async virtual void GetRecordCount(DataStorageCredentials pCredentials) { }
+        protected async virtual void RunCountQueries(DataStorageCredentials pCredentials) { }
+        //protected async virtual void GetRecordCount(DataStorageCredentials pCredentials) { }
 
         //TODO - placed here to be used later...can't be used in its current format :)
         protected source.Update Parse(source.SourceRecord sr)

@@ -87,16 +87,59 @@ namespace Shared.dto.blob
                 }
             }
         }
-        protected override void GetRecordCount(DataStorageCredentials pCredentials)
+        
+        protected override void RunCountQueries(DataStorageCredentials pCredentials)
+        {
+            //throw new Exception("complete blob run count queries method(s)");
+
+            GetTotalRecordCount(pCredentials);
+            GetSpecificId();
+        }
+        private void GetTotalRecordCount(DataStorageCredentials pCredentials)
         {
             long recordCnt = 0;
             BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)Credentials;
             CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, false);
 
+            Console.WriteLine("Starting total blob record count! " + DateTime.Now.ToString());
+
             foreach (IListBlobItem item in container.ListBlobs(null, false))
                 recordCnt++;
 
             Console.WriteLine("There were " + recordCnt.ToString() + " Inserted! " + DateTime.Now.ToString());
+        }
+        private void GetSpecificId()
+        {
+            bool recordExists = false;
+            BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)Credentials;
+            CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, false);
+
+            Console.WriteLine("Starting specific record search in blob storage for id " + this.TestRecordId.ToString() + " - " + DateTime.Now.ToString());
+
+            foreach (IListBlobItem item in container.ListBlobs(null, false))
+            {
+                if (item.GetType() == typeof(CloudBlockBlob))
+                {
+                    CloudBlockBlob blob = (CloudBlockBlob)item;
+
+                    //Thread1_Db-1000000_East_StatusUpdate_20164517064523768PM
+                    int start = blob.Name.IndexOf("-");
+                    string afterDb = blob.Name.Substring(start, blob.Name.Length - start);
+
+                    int end = afterDb.IndexOf("_");
+                    string dbIdStr = afterDb.Substring(0, end);
+                    dbIdStr = dbIdStr.Replace("-", "");
+                    dbIdStr = dbIdStr.Replace("_", "");
+
+                    if (dbIdStr.Equals(this.TestRecordId.ToString()))
+                    {
+                        recordExists = true;
+                        break;
+                    }
+                }
+            }
+
+            Console.WriteLine("Record exists (true/false): " + recordExists.ToString() + " - " + DateTime.Now.ToString());
         }
     }
 }

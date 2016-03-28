@@ -98,7 +98,12 @@ namespace Shared.dto.documentdb
             Console.WriteLine("Thread " + threadId + " Done! " + DateTime.Now.ToString());
         }
 
-        protected override void GetRecordCount(DataStorageCredentials pCredentials)
+        protected override void RunCountQueries(DataStorageCredentials pCredentials)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected void GetRecordCount(DataStorageCredentials pCredentials)
         {
             DocumentDbDataStorageCredentials dddsc = (DocumentDbDataStorageCredentials)Credentials;
             DocumentClient dc = Utilities.GetDocumentDbClient(dddsc.url, dddsc.key);

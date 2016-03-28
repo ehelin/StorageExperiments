@@ -84,7 +84,12 @@ namespace Shared.dto.tablestorage
                 }
             }
         }
-        protected override void GetRecordCount(DataStorageCredentials pCredentials)
+
+        protected override void RunCountQueries(DataStorageCredentials pCredentials)
+        {
+            throw new NotImplementedException();
+        }
+        private void GetRecordCount(DataStorageCredentials pCredentials)
         {
             TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)Credentials;
             CloudTable table = Utilities.GetTableStorageContainer(false, tsc.azureConnectionString, tsc.azureContainerName);

@@ -52,7 +52,14 @@ namespace Shared.dto.SqlServer
 
             Console.WriteLine("Thread " + threadId + " Done! " + DateTime.Now.ToString());
         }
-        protected override void GetRecordCount(DataStorageCredentials pCredentials)
+
+
+        protected override void RunCountQueries(DataStorageCredentials pCredentials)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void GetRecordCount(DataStorageCredentials pCredentials)
         {
             long recordCnt = 0;
             SqlDataReader rdr = null;
@@ -94,16 +101,16 @@ namespace Shared.dto.SqlServer
                     SqlServerStorageCredentials credentials = (SqlServerStorageCredentials)pCredentials;
                     cmd = Utilities.GetCommand(credentials);
                     cmd.CommandType = System.Data.CommandType.Text;
-                    cmd.CommandText = "if not exists(select originalId  "
-                                       + " from dbo.Updates  "
-                                        + "  where originalId = @originalId  "
-                                        + "  or[type] = @type  "
-                                        + "  or data = @data  "
-                                        + "  or created = @created)  "
-                                        + "  begin  "
-                                            + "  INSERT INTO[dbo].[Updates] select @originalId, @type, @data, @created  "
-                                        + "  end ";
-
+                    //cmd.CommandText = "if not exists(select Id  "
+                    //                   + " from dbo.UpdatesCloudTable  "
+                    //                    + "  where Id = @originalId  "
+                    //                    + "  or[type] = @type  "
+                    //                    + "  or data = @data  "
+                    //                    + "  or created = @created)  "
+                    //                    + "  begin  "
+                    //                        + "  INSERT INTO[dbo].[UpdatesCloudTable] select @originalId, @type, @data, @created  "
+                    //                    + "  end ";
+                    cmd.CommandText = " INSERT INTO[dbo].[UpdatesCloudTable] select @originalId, @type, @data, @created ";
                     cmd.Parameters.Clear();
 
                     cmd.Parameters.Add(new SqlParameter("@originalId", sr.Id));
