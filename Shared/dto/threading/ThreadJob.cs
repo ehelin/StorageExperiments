@@ -10,7 +10,9 @@ namespace Shared.dto.threading
         protected long startId = 0;
         protected int threadId = 0;
 
-        protected long TestRecordId = 233101; 
+        //TODO - make constants
+        protected long TestRecordId = 233101;
+        protected string TestType = "SouthEast"; 
 
         public ThreadJob() { }
 

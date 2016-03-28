@@ -6,6 +6,7 @@ using Shared.dto.threading;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Linq;
 
 namespace Shared.dto.blob
 {
@@ -16,7 +17,8 @@ namespace Shared.dto.blob
         public BlobLoadThreadJob(DataStorageCredentials pCredentials,
                                  long recordCount,
                                  long startId,
-                                 int threadId) : base(pCredentials, recordCount, startId, threadId)
+                                 int threadId)
+            : base(pCredentials, recordCount, startId, threadId)
         { }
 
         protected async override void RunLoad(int pThreadId, long pRecordCount, DataStorageCredentials pCredentials, long pStartId, long pEndPoint)
@@ -87,13 +89,15 @@ namespace Shared.dto.blob
                 }
             }
         }
-        
+
         protected override void RunCountQueries(DataStorageCredentials pCredentials)
         {
             //throw new Exception("complete blob run count queries method(s)");
 
             GetTotalRecordCount(pCredentials);
             GetSpecificId();
+            GetCountForSpecificType();
+            GetSortedList();
         }
         private void GetTotalRecordCount(DataStorageCredentials pCredentials)
         {
@@ -131,6 +135,7 @@ namespace Shared.dto.blob
                     dbIdStr = dbIdStr.Replace("-", "");
                     dbIdStr = dbIdStr.Replace("_", "");
 
+                    //better test...is the id stored in the blob name?
                     if (dbIdStr.Equals(this.TestRecordId.ToString()))
                     {
                         recordExists = true;
@@ -140,6 +145,39 @@ namespace Shared.dto.blob
             }
 
             Console.WriteLine("Record exists (true/false): " + recordExists.ToString() + " - " + DateTime.Now.ToString());
+        }
+        private void GetCountForSpecificType()
+        {
+            long recordCnt = 0;
+            BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)Credentials;
+            CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, false);
+
+            Console.WriteLine("Starting specific record search in blob storage for type " + this.TestType + " - " + DateTime.Now.ToString());
+
+            foreach (IListBlobItem item in container.ListBlobs(null, false))
+            {
+                if (item.GetType() == typeof(CloudBlockBlob))
+                {
+                    CloudBlockBlob blob = (CloudBlockBlob)item;
+
+                    if (blob.Name.IndexOf(this.TestType) != -1)
+                        recordCnt++;
+                }
+            }
+
+            Console.WriteLine("There were " + recordCnt.ToString() + " matching the " + this.TestType + " type! " + DateTime.Now.ToString());
+        }
+        private void GetSortedList()
+        {
+            BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)Credentials;
+            CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, false);
+
+            Console.WriteLine("Starting record sort in blob storage - " + DateTime.Now.ToString());
+
+            //tODO - needs work
+            container.ListBlobs(null, false).ToList().Sort();
+
+            Console.WriteLine("Record sort in blob storage done! " + DateTime.Now.ToString());
         }
     }
 }
