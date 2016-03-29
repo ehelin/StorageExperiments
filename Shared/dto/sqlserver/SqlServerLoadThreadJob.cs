@@ -40,7 +40,7 @@ namespace Shared.dto.SqlServer
                     IList<SourceRecord> scrRecords = db.GetRecord(startId, endId);
 
                     foreach (SourceRecord sr in scrRecords)
-                        InsertRecord(sr, pCredentials);
+                        InsertRecord(sr, pCredentials, threadId);
                 }
                 catch (Exception ex)
                 {
@@ -88,7 +88,7 @@ namespace Shared.dto.SqlServer
 
             Console.WriteLine("There were " + recordCnt.ToString() + " Inserted! " + DateTime.Now.ToString());
         }
-        private void InsertRecord(SourceRecord sr, DataStorageCredentials pCredentials)
+        private void InsertRecord(SourceRecord sr, DataStorageCredentials pCredentials, long pThreadName)
         {
             SqlCommand cmd = null;
             bool inserted = false;
@@ -114,7 +114,7 @@ namespace Shared.dto.SqlServer
                     cmd.Parameters.Clear();
 
                     cmd.Parameters.Add(new SqlParameter("@originalId", sr.Id));
-                    cmd.Parameters.Add(new SqlParameter("@type", sr.Type));
+                    cmd.Parameters.Add(new SqlParameter("@type", pThreadName.ToString() + "-" + sr.Type));
                     cmd.Parameters.Add(new SqlParameter("@data", sr.Data));
                     cmd.Parameters.Add(new SqlParameter("@created", sr.Created));
 
