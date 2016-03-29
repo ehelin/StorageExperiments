@@ -31,7 +31,8 @@ namespace Shared.dto.EventHub
             long startId = pStartId;
             long endId = pEndPoint;
 
-            Console.WriteLine("Thread " + threadId + " starting with " + recordCount.ToString() + " records! " + DateTime.Now.ToString());
+            Console.WriteLine("Thread " + threadId + " (RcrdCnt/Start/End) (" + recordCount.ToString() + "/"
+                                + startId.ToString() + "/" + endId.ToString() + ")" + DateTime.Now.ToString());
 
             while (startId <= endId)
             {
