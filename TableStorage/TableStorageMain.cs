@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using Shared;
 using Shared.dto.source;
 using Shared.dto.tablestorage;
+using Shared.dto;
 using Microsoft.WindowsAzure.Storage.Table;
+using Shared.dto.threading;
 using System.Linq;
 
 namespace TableStorage
@@ -12,6 +14,8 @@ namespace TableStorage
     {
         private bool DeleteFiles = false;
         private bool DeleteContainers = false;
+
+        public TableStorageMain() { }
 
         public TableStorageMain(string pAzureConnectionString,
                                 string pAzureContainerName,
@@ -37,6 +41,14 @@ namespace TableStorage
         {
             Setup();
             RunExample();
+        }
+
+        public void RunQueries(string pAzureConnectionString,
+                              string pAzureContainerName)
+        {
+            ThreadJob tj = new TableStorageLoadThreadJob();
+            DataStorageCredentials cred = new TableStorageDataStorageCredentials(pAzureConnectionString, pAzureContainerName);
+            tj.RunCountQueries(cred);
         }
 
         #region Setup

@@ -1,11 +1,14 @@
 ﻿using Shared.dto.SqlServer;
 using System.Data.SqlClient;
 using Shared;
+using Shared.dto.threading;
 
 namespace SqlServerDb
 {
     public class SqlServerDbMain : Shared.dto.Main
     {
+        public SqlServerDbMain() { }
+
         public SqlServerDbMain(string pDbconn,
                                int pMaxThreads,
                                long sourceRecordTotal)
@@ -22,8 +25,14 @@ namespace SqlServerDb
 
         public void Run()
         {
-            Setup();
+            //Setup();
             RunExample();
+        }
+
+        public void RunQueries(string dbConn)
+        {
+            ThreadJob tj = new SqlServerLoadThreadJob();
+            tj.RunCountQueries(new SqlServerStorageCredentials(dbConn));
         }
 
         #region Setup

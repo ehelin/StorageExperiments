@@ -11,17 +11,86 @@ namespace Driver
     {
         static void Main(string[] args)
         {
+            //RunDataLoads();
+            //RunSimpleThreadAsyncAwait();
+            RunQueries();
+        }
+
+        #region Queries
+
+        private static void RunQueries()
+        {
+            RunBlobQueries();
+            RunTableStorageQueries();
+            RunAzureSqlServerDbQueries();
+            //RunDocumentDbQueries();
+            RunEventHubQueries();
+        }
+
+        private static void RunBlobQueries()
+        {
+            string azConnection = "";
+            string azContainterName = "datablob";
+
+            BlobMain m = new BlobMain();
+            m.RunQueries(azConnection, azContainterName);
+
+            Console.Read();  //hold open application
+        }
+        private static void RunTableStorageQueries()
+        {
+            string azConnection = "";  
+            string azContainterName = "dataTableStorage";
+
+            TableStorageMain tsm = new TableStorageMain();
+            tsm.RunQueries(azConnection, azContainterName);
+
+            Console.Read();  //hold open application
+        }
+        private static void RunAzureSqlServerDbQueries()
+        {
+            Console.WriteLine("Starting SQL Server Data Load " + DateTime.Now.ToString());
+
+            string dbConnection = "";
+            SqlServerDbMain ssd = new SqlServerDbMain();
+            ssd.RunQueries(dbConnection);
+
+            Console.Read();  //hold open application
+        }
+        private static async void RunDocumentDbQueries()
+        {
+            string EndpointUrl = "";
+            string AuthorizationKey = "";
+
+            DocumentDatabaseMain ddm = new DocumentDatabaseMain();
+            ddm.RunQueries(EndpointUrl, AuthorizationKey);
+
+            Console.Read();  //hold open application
+        }
+        private static async void RunEventHubQueries()
+        {
+            string dbConnection = "";
+            EventHub.EventHub eh = new EventHub.EventHub(dbConnection);
+
+            Console.Read();  //hold open application
+        }
+
+        #endregion
+
+        #region Data Loads
+
+        private static void RunDataLoads()
+        {
             //RunBlob();
             //RunTableStorage();
             //RunAzureSqlServerDb();
             //RunEventHub();
             //RunDocumentDb();
-            //RunSimpleThreadAsyncAwait();
         }
 
         private static void RunBlob()
         {
-            Console.WriteLine("Starting Blob " + DateTime.Now.ToString());
+            Console.WriteLine("Starting Blob Data Load " + DateTime.Now.ToString());
 
             string azConnection = "";
             string azContainterName = "datablob";
@@ -32,10 +101,10 @@ namespace Driver
             Console.Read();  //hold open application
 
             Console.WriteLine("Blob Done! " + DateTime.Now.ToString());
-        }
+        }        
         private static void RunTableStorage()
         {
-            Console.WriteLine("Starting TableStorage " + DateTime.Now.ToString());
+            Console.WriteLine("Starting TableStorage Data Load " + DateTime.Now.ToString());
 
             string azConnection = "";
             string azContainterName = "dataTableStorage";
@@ -49,7 +118,7 @@ namespace Driver
         }
         private static void RunAzureSqlServerDb()
         {
-            Console.WriteLine("Starting SQL Server " + DateTime.Now.ToString());
+            Console.WriteLine("Starting SQL Server Data Load " + DateTime.Now.ToString());
 
             string dbConnection = "";
             SqlServerDbMain ssd = new SqlServerDbMain(dbConnection, 32, 23310144);
@@ -61,7 +130,7 @@ namespace Driver
         }
         private static async void RunDocumentDb()
         {
-            Console.WriteLine("Starting Document Db " + DateTime.Now.ToString());
+            Console.WriteLine("Starting Document Db Data Load " + DateTime.Now.ToString());
 
             string EndpointUrl = "";
             string AuthorizationKey = "";
@@ -75,7 +144,7 @@ namespace Driver
         }
         private static async void RunEventHub()
         {
-            Console.WriteLine("Starting Event Hub " + DateTime.Now.ToString());
+            Console.WriteLine("Starting Event Hub Data Load " + DateTime.Now.ToString());
 
             string eventHub = "";
             string eventHubName = "satellitehub";
@@ -87,6 +156,8 @@ namespace Driver
 
             Console.WriteLine("Event Hub Done! " + DateTime.Now.ToString());
         }
+
+        #endregion
 
         #region Simple Async Await Sample
 

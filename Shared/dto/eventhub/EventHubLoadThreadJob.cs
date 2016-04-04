@@ -4,11 +4,16 @@ using Shared.dto.threading;
 using Microsoft.ServiceBus.Messaging;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Shared;
+using Shared.dto;
+using Shared.dto.SqlServer;
 
 namespace Shared.dto.EventHub
 {
     public class EventHubLoadThreadJob : ThreadJob
     {
+        private SqlServerStorageCredentials streamAnalyticsDbCred = null;
+
         public EventHubLoadThreadJob() : base() { }
 
         public EventHubLoadThreadJob(DataStorageCredentials pCredentials,
@@ -43,8 +48,8 @@ namespace Shared.dto.EventHub
                     foreach (SourceRecord sr in scrRecords)
                     {
                         SourceRecordEventHub srch = ConvertSourceRecord(sr);
-                        //InsertRecord(srch);
-                        InsertRecordAsycn(srch);
+                        InsertRecord(srch);
+                        //InsertRecordAsycn(srch);
                     }
                 }
                 catch (Exception ex)
@@ -172,10 +177,31 @@ namespace Shared.dto.EventHub
                 }
             }
         }
-
-        protected override void RunCountQueries(DataStorageCredentials pCredentials)
+        
+        public override void RunCountQueries(DataStorageCredentials pCredentials)
         {
-            Console.WriteLine("Event Hub Total is not calculated.  Get from stream analytics job query - " + DateTime.Now.ToString());
+            //HACK - Using Sql Server Credentials for the Query Count!
+            GetRecordCount(streamAnalyticsDbCred);
+            GetSpecificId(streamAnalyticsDbCred);
+            GetCountForSpecificType(streamAnalyticsDbCred);
+        }
+        private void GetRecordCount(DataStorageCredentials pCredentials)
+        {
+            string sql = "select count(*) from [dbo].[UpdatesStreamAnalytics]";
+
+            this.RunSqlQuery(sql, pCredentials, "Event Hub Record Count");
+        }
+        private void GetSpecificId(DataStorageCredentials pCredentials)
+        {
+            string sql = "select count(*) from [dbo].[UpdatesStreamAnalytics] where Id = " + this.TestRecordId.ToString();
+
+            this.RunSqlQuery(sql, pCredentials, "Event Hub Record Specific Id");
+        }
+        private void GetCountForSpecificType(DataStorageCredentials pCredentials)
+        {
+            string sql = "select count(*) from [dbo].[UpdatesStreamAnalytics] where [type] = " + this.TestType;
+
+            this.RunSqlQuery(sql, pCredentials, "Event Hub Record Count for Specific Type");
         }
     }
 }

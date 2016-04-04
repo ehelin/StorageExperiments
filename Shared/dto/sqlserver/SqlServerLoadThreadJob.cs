@@ -53,42 +53,6 @@ namespace Shared.dto.SqlServer
 
             Console.WriteLine("Thread " + threadId + " Done! " + DateTime.Now.ToString());
         }
-
-
-        protected override void RunCountQueries(DataStorageCredentials pCredentials)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void GetRecordCount(DataStorageCredentials pCredentials)
-        {
-            long recordCnt = 0;
-            SqlDataReader rdr = null;
-            SqlServerStorageCredentials credentials = (SqlServerStorageCredentials)pCredentials;
-            SqlCommand cmd = Utilities.GetCommand(credentials);
-
-            try
-            {
-                cmd.CommandType = System.Data.CommandType.Text;
-                cmd.CommandTimeout = 600000000;
-                cmd.CommandText = "select count(*) from [dbo].[Updates]";
-
-                rdr = cmd.ExecuteReader();
-
-                if (rdr.Read())
-                    recordCnt = Utilities.GetSafeLong(rdr[0]);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex.Message);
-            }
-            finally
-            {
-                Utilities.CloseDbObjects(cmd.Connection, cmd, rdr, null);
-            }
-
-            Console.WriteLine("There were " + recordCnt.ToString() + " Inserted! " + DateTime.Now.ToString());
-        }
         private void InsertRecord(SourceRecord sr, DataStorageCredentials pCredentials, long pThreadName)
         {
             SqlCommand cmd = null;
@@ -141,6 +105,31 @@ namespace Shared.dto.SqlServer
                     Utilities.CloseCmd(cmd);
                 }
             }
+        }
+
+        public override void RunCountQueries(DataStorageCredentials pCredentials)
+        {
+            GetRecordCount(pCredentials);
+            GetSpecificId(pCredentials);
+            GetCountForSpecificType(pCredentials);
+        }
+        private void GetRecordCount(DataStorageCredentials pCredentials)
+        {
+            string sql = "select count(*) from [dbo].[UpdatesCloudTable]";
+
+            this.RunSqlQuery(sql, pCredentials, "Sql Server Record Count");
+        }
+        private void GetSpecificId(DataStorageCredentials pCredentials)
+        {
+            string sql = "select count(*) from [dbo].[UpdatesCloudTable] where Id = " + this.TestRecordId.ToString();
+
+            this.RunSqlQuery(sql, pCredentials, "Sql Server Record Specific Id");
+        }
+        private void GetCountForSpecificType(DataStorageCredentials pCredentials)
+        {
+            string sql = "select count(*) from [dbo].[UpdatesCloudTable] where [type] = " + this.TestType;
+
+            this.RunSqlQuery(sql, pCredentials, "Sql Server Record Count for Specific Type");
         }
     }
 }

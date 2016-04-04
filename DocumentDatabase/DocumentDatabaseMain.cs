@@ -19,6 +19,8 @@ namespace DocumentDatabase
         private string docDbId = string.Empty;
         private string docColId = string.Empty;
 
+        public DocumentDatabaseMain() { }
+
         public DocumentDatabaseMain(string pUrl,
                                 string pKey,
                                 int pMaxThreads,
@@ -42,6 +44,13 @@ namespace DocumentDatabase
         public void Run()
         {
             RunExample();
+        }
+
+        public void RunQueries(string pUrl,
+                                string pKey)
+        {
+            ThreadJob tj = new DocumentDbLoadThreadJob();
+            tj.RunCountQueries(new DocumentDbDataStorageCredentials(pUrl, pKey));
         }
 
         //NOTE - Document db implementation not really tested.

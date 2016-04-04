@@ -7,7 +7,7 @@
 
     public class SourceDataConstants
     {
-        public const string DB_CONNECTION = "Data Source=STOCK4873-DT;Initial Catalog=Satellite;Integrated Security=true;";
+        public const string DB_CONNECTION = "Data Source=;Initial Catalog=Satellite;Integrated Security=true;";
         public const int DB_TIMEOUT = 30000000;  //seconds
 
         public const string SQL_GET_TOP_VALUE = "10000";

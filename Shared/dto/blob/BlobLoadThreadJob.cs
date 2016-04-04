@@ -91,19 +91,16 @@ namespace Shared.dto.blob
             }
         }
 
-        protected override void RunCountQueries(DataStorageCredentials pCredentials)
+        public override void RunCountQueries(DataStorageCredentials pCredentials)
         {
-            //throw new Exception("complete blob run count queries method(s)");
-
             GetTotalRecordCount(pCredentials);
             GetSpecificId();
             GetCountForSpecificType();
-            GetSortedList();
         }
         private void GetTotalRecordCount(DataStorageCredentials pCredentials)
         {
             long recordCnt = 0;
-            BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)Credentials;
+            BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)pCredentials;
             CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, false);
 
             Console.WriteLine("Starting total blob record count! " + DateTime.Now.ToString());
@@ -167,18 +164,6 @@ namespace Shared.dto.blob
             }
 
             Console.WriteLine("There were " + recordCnt.ToString() + " matching the " + this.TestType + " type! " + DateTime.Now.ToString());
-        }
-        private void GetSortedList()
-        {
-            BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)Credentials;
-            CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, false);
-
-            Console.WriteLine("Starting record sort in blob storage - " + DateTime.Now.ToString());
-
-            //tODO - needs work
-            container.ListBlobs(null, false).ToList().Sort();
-
-            Console.WriteLine("Record sort in blob storage done! " + DateTime.Now.ToString());
         }
     }
 }

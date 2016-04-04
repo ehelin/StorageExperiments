@@ -53,7 +53,7 @@ namespace Shared.dto.documentdb
 
             await Task.WhenAll(tasks);
 
-            GetRecordCount(this.Credentials);
+            RunCountQueries(this.Credentials);
         }
 
         protected async override void RunLoad(int pThreadId, long pRecordCount, DataStorageCredentials pCredentials, long pStartId, long pEndPoint)
@@ -98,28 +98,7 @@ namespace Shared.dto.documentdb
 
             Console.WriteLine("Thread " + threadId + " Done! " + DateTime.Now.ToString());
         }
-
-        protected override void RunCountQueries(DataStorageCredentials pCredentials)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected void GetRecordCount(DataStorageCredentials pCredentials)
-        {
-            DocumentDbDataStorageCredentials dddsc = (DocumentDbDataStorageCredentials)Credentials;
-            DocumentClient dc = Utilities.GetDocumentDbClient(dddsc.url, dddsc.key);
-            var databaseCount = dc.CreateDatabaseQuery().ToList();
-            Microsoft.Azure.Documents.Database azureDb = dc.CreateDatabaseQuery().Where(d => d.Id == DocumentDbConstants.DOCUMENT_DB_NAME).ToArray().FirstOrDefault();
-
-            var collectionCount = dc.CreateDocumentCollectionQuery(azureDb.SelfLink).ToList();
-
-            DocumentCollection update = dc.CreateDocumentCollectionQuery(azureDb.SelfLink).Where(c => c.Id == DocumentDbConstants.DOCUMENT_DB_COLLECTION_NAME).ToArray().FirstOrDefault();
-
-            var documentCount = dc.CreateDocumentQuery(update.SelfLink, "SELECT * FROM c").ToList();
-
-            Console.WriteLine("There are " + documentCount.Count().ToString() + " records!");
-        }
-
+        
         private async Task<bool> InsertDocument(Update u, DocumentClient dc, string docDbId, string docColId)
         {
             int errorTryCtr = 0;
@@ -170,6 +149,39 @@ namespace Shared.dto.documentdb
             }
 
             return col;
+        }
+        
+        public override void RunCountQueries(DataStorageCredentials pCredentials)
+        {
+            GetTotalRecordCount(pCredentials);
+            GetSpecificId();
+            GetCountForSpecificType();
+        }
+
+        protected void GetTotalRecordCount(DataStorageCredentials pCredentials)
+        {
+            Console.WriteLine("Starting total document db record count! " + DateTime.Now.ToString());
+
+            DocumentDbDataStorageCredentials dddsc = (DocumentDbDataStorageCredentials)Credentials;
+            DocumentClient dc = Utilities.GetDocumentDbClient(dddsc.url, dddsc.key);
+            var databaseCount = dc.CreateDatabaseQuery().ToList();
+            Microsoft.Azure.Documents.Database azureDb = dc.CreateDatabaseQuery().Where(d => d.Id == DocumentDbConstants.DOCUMENT_DB_NAME).ToArray().FirstOrDefault();
+
+            var collectionCount = dc.CreateDocumentCollectionQuery(azureDb.SelfLink).ToList();
+
+            DocumentCollection update = dc.CreateDocumentCollectionQuery(azureDb.SelfLink).Where(c => c.Id == DocumentDbConstants.DOCUMENT_DB_COLLECTION_NAME).ToArray().FirstOrDefault();
+
+            var documentCount = dc.CreateDocumentQuery(update.SelfLink, "SELECT * FROM c").ToList();
+
+            Console.WriteLine("There are " + documentCount.Count().ToString() + " records! " + DateTime.Now.ToString());
+        }
+        private void GetSpecificId()
+        {
+            throw new NotImplementedException();
+        }
+        private void GetCountForSpecificType()
+        {
+            throw new NotImplementedException();
         }
     }
 }

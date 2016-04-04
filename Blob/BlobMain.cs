@@ -2,6 +2,8 @@
 using Shared.dto.blob;
 using Shared;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Shared.dto.threading;
+using Shared.dto;
 
 namespace Blob
 {
@@ -9,6 +11,8 @@ namespace Blob
     {
         private bool DeleteFiles = false;
         private bool DeleteContainers = false;
+
+        public BlobMain() { }
 
         public BlobMain(string pAzureConnectionString,
                         string pAzureContainerName,
@@ -34,6 +38,13 @@ namespace Blob
         {
             Setup();
             RunExample();
+        }
+
+        public void RunQueries(string pAzureConnectionString,
+                              string pAzureContainerName)
+        {
+            ThreadJob tj = new BlobLoadThreadJob();
+            tj.RunCountQueries(new BlobDataStorageCredentials(pAzureConnectionString, pAzureContainerName));
         }
 
         #region Setup

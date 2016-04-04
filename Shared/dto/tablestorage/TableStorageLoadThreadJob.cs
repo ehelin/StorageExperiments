@@ -86,15 +86,20 @@ namespace Shared.dto.tablestorage
             }
         }
 
-        protected override void RunCountQueries(DataStorageCredentials pCredentials)
+        public override void RunCountQueries(DataStorageCredentials pCredentials)
         {
-            throw new NotImplementedException();
+            GetTotalRecordCount(pCredentials);
+            GetSpecificId(pCredentials);
+            GetCountForSpecificType(pCredentials);
         }
-        private void GetRecordCount(DataStorageCredentials pCredentials)
+
+        private void GetTotalRecordCount(DataStorageCredentials pCredentials)
         {
             TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)Credentials;
             CloudTable table = Utilities.GetTableStorageContainer(false, tsc.azureConnectionString, tsc.azureContainerName);
             List<long> updates = null;
+
+            Console.WriteLine("Starting total table storage record count! " + DateTime.Now.ToString());
 
             try
             {
@@ -103,10 +108,56 @@ namespace Shared.dto.tablestorage
             }
             catch (Exception e)
             {
-                Console.WriteLine("ERROR: TableStorageLoadThreadJob.cs->GetRecordCount(args): " + e.Message);
+                Console.WriteLine("ERROR: " + e.Message);
             }
 
-            Console.WriteLine("There are " + updates.Count() + " records!");
+            Console.WriteLine("There are " + updates.Count() + " records! " + DateTime.Now.ToString());
+        }
+        private void GetSpecificId(DataStorageCredentials pCredentials)
+        {
+            bool recordExists = false;
+            TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)Credentials;
+            CloudTable table = Utilities.GetTableStorageContainer(false, tsc.azureConnectionString, tsc.azureContainerName);
+            List<long> updates = null;
+
+            Console.WriteLine("Starting specific record search in table storage for id " + this.TestRecordId.ToString() + " - " + DateTime.Now.ToString());
+
+            try
+            {
+                updates = (from update in table.CreateQuery<SourceRecordTableStorage>()
+                           where update.Id.Equals(this.TestRecordId)
+                           select update.Id).ToList<long>();
+
+                if (updates.Count() == 1)
+                    recordExists = true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("ERROR: " + e.Message);
+            }
+
+            Console.WriteLine("Record exists (true/false): " + recordExists.ToString() + " - " + DateTime.Now.ToString());
+        }
+        private void GetCountForSpecificType(DataStorageCredentials pCredentials)
+        {
+            TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)Credentials;
+            CloudTable table = Utilities.GetTableStorageContainer(false, tsc.azureConnectionString, tsc.azureContainerName);
+            List<long> updates = null;
+
+            Console.WriteLine("Starting specific record search in table storage for type " + this.TestType + " - " + DateTime.Now.ToString());
+
+            try
+            {
+                updates = (from update in table.CreateQuery<SourceRecordTableStorage>()
+                           where update.Type.Equals(this.TestType)
+                           select update.Id).ToList<long>();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("ERROR: " + e.Message);
+            }
+
+            Console.WriteLine("There were " + updates.Count.ToString() + " matching the " + this.TestType + " type! " + DateTime.Now.ToString());
         }
     }
 }

@@ -1,5 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Shared.dto;
+using Shared.dto.SqlServer;
+using System.Data.SqlClient;
+using System;
 
 namespace Shared.dto.threading
 {
@@ -169,8 +173,7 @@ namespace Shared.dto.threading
         }
 
         protected async virtual void RunLoad(int pThreadId, long pRecordCount, DataStorageCredentials pCredentials, long pStartId, long pEndPoint) { }
-        protected async virtual void RunCountQueries(DataStorageCredentials pCredentials) { }
-        //protected async virtual void GetRecordCount(DataStorageCredentials pCredentials) { }
+        public async virtual void RunCountQueries(DataStorageCredentials pCredentials) { }
 
         //TODO - placed here to be used later...can't be used in its current format :)
         protected source.Update Parse(source.SourceRecord sr)
@@ -188,6 +191,39 @@ namespace Shared.dto.threading
             }
 
             return u;
+        }
+
+        protected void RunSqlQuery(string query, DataStorageCredentials pCredentials, string msg)
+        {
+            long recordCnt = 0;
+            SqlDataReader rdr = null;
+            SqlServerStorageCredentials credentials = (SqlServerStorageCredentials)pCredentials;
+            SqlCommand cmd = Utilities.GetCommand(credentials);
+
+            Console.WriteLine("Starting " + msg + "! " + DateTime.Now.ToString());
+
+            try
+            {
+                cmd.CommandType = System.Data.CommandType.Text;
+                cmd.CommandTimeout = 600000000;
+                cmd.CommandText = query;
+
+                rdr = cmd.ExecuteReader();
+
+                if (rdr.Read())
+                    recordCnt = Utilities.GetSafeLong(rdr[0]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+            finally
+            {
+                Utilities.CloseDbObjects(cmd.Connection, cmd, rdr, null);
+            }
+
+            Console.WriteLine("Done with " + msg + "! Result: " + recordCnt.ToString() + DateTime.Now.ToString());
+            Console.WriteLine("There were " + recordCnt.ToString() + " Inserted! " + DateTime.Now.ToString());
         }
     }
 }
