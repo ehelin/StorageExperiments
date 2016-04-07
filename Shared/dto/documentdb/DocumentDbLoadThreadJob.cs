@@ -26,6 +26,9 @@ namespace Shared.dto.documentdb
             docDb = pDocDb;
         }
 
+        //NOTE: I had hoped that all of the data loads would have used the same launchthread method in ThreadJob, but because Document db on the 
+        //price tier I appear to have access too, the maximum thread count I have been able to run without throwing the 'Rate to large' error is 5. Ideally,
+        //I will refactor this to be more elegant.
         public virtual async void LaunchThreads()
         {
             List<Task> tasks = new List<Task>();

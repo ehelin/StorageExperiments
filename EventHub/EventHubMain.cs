@@ -2,7 +2,6 @@
 using Shared;
 using System;
 using Shared.dto;
-using Shared;
 using Shared.dto.threading;
 using Shared.dto.SqlServer;
 
@@ -37,7 +36,7 @@ namespace EventHub
             RunExample();
         }
 
-        public void RunQueries(string dbConn)
+        public void RunQueries()
         {
             ThreadJob tj = new EventHubLoadThreadJob();
             tj.RunCountQueries(streamAnalyticsDbCred);

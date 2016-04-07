@@ -66,15 +66,6 @@ namespace Shared.dto.SqlServer
                     SqlServerStorageCredentials credentials = (SqlServerStorageCredentials)pCredentials;
                     cmd = Utilities.GetCommand(credentials);
                     cmd.CommandType = System.Data.CommandType.Text;
-                    //cmd.CommandText = "if not exists(select Id  "
-                    //                   + " from dbo.UpdatesCloudTable  "
-                    //                    + "  where Id = @originalId  "
-                    //                    + "  or[type] = @type  "
-                    //                    + "  or data = @data  "
-                    //                    + "  or created = @created)  "
-                    //                    + "  begin  "
-                    //                        + "  INSERT INTO[dbo].[UpdatesCloudTable] select @originalId, @type, @data, @created  "
-                    //                    + "  end ";
                     cmd.CommandText = " INSERT INTO[dbo].[UpdatesCloudTable] select @originalId, @type, @data, @created ";
                     cmd.Parameters.Clear();
 
@@ -127,7 +118,7 @@ namespace Shared.dto.SqlServer
         }
         private void GetCountForSpecificType(DataStorageCredentials pCredentials)
         {
-            string sql = "select count(*) from [dbo].[UpdatesCloudTable] where [type] = " + this.TestType;
+            string sql = "select count(*) from [dbo].[UpdatesCloudTable] where [type] like '%" + this.TestType + "%'";
 
             this.RunSqlQuery(sql, pCredentials, "Sql Server Record Count for Specific Type");
         }

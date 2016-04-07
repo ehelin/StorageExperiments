@@ -94,8 +94,8 @@ namespace Shared.dto.blob
         public override void RunCountQueries(DataStorageCredentials pCredentials)
         {
             GetTotalRecordCount(pCredentials);
-            GetSpecificId();
-            GetCountForSpecificType();
+            GetSpecificId(pCredentials);
+            GetCountForSpecificType(pCredentials);
         }
         private void GetTotalRecordCount(DataStorageCredentials pCredentials)
         {
@@ -110,10 +110,10 @@ namespace Shared.dto.blob
 
             Console.WriteLine("There were " + recordCnt.ToString() + " Inserted! " + DateTime.Now.ToString());
         }
-        private void GetSpecificId()
+        private void GetSpecificId(DataStorageCredentials pCredentials)
         {
             bool recordExists = false;
-            BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)Credentials;
+            BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)pCredentials;
             CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, false);
 
             Console.WriteLine("Starting specific record search in blob storage for id " + this.TestRecordId.ToString() + " - " + DateTime.Now.ToString());
@@ -144,10 +144,10 @@ namespace Shared.dto.blob
 
             Console.WriteLine("Record exists (true/false): " + recordExists.ToString() + " - " + DateTime.Now.ToString());
         }
-        private void GetCountForSpecificType()
+        private void GetCountForSpecificType(DataStorageCredentials pCredentials)
         {
             long recordCnt = 0;
-            BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)Credentials;
+            BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)pCredentials;
             CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, false);
 
             Console.WriteLine("Starting specific record search in blob storage for type " + this.TestType + " - " + DateTime.Now.ToString());

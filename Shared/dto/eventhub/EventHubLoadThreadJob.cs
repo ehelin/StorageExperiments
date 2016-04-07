@@ -12,8 +12,6 @@ namespace Shared.dto.EventHub
 {
     public class EventHubLoadThreadJob : ThreadJob
     {
-        private SqlServerStorageCredentials streamAnalyticsDbCred = null;
-
         public EventHubLoadThreadJob() : base() { }
 
         public EventHubLoadThreadJob(DataStorageCredentials pCredentials,
@@ -49,6 +47,8 @@ namespace Shared.dto.EventHub
                     {
                         SourceRecordEventHub srch = ConvertSourceRecord(sr);
                         InsertRecord(srch);
+
+                        //TODO - test async by itself not multi-threaded...better?
                         //InsertRecordAsycn(srch);
                     }
                 }
@@ -181,9 +181,9 @@ namespace Shared.dto.EventHub
         public override void RunCountQueries(DataStorageCredentials pCredentials)
         {
             //HACK - Using Sql Server Credentials for the Query Count!
-            GetRecordCount(streamAnalyticsDbCred);
-            GetSpecificId(streamAnalyticsDbCred);
-            GetCountForSpecificType(streamAnalyticsDbCred);
+            GetRecordCount(pCredentials);
+            GetSpecificId(pCredentials);
+            GetCountForSpecificType(pCredentials);
         }
         private void GetRecordCount(DataStorageCredentials pCredentials)
         {
@@ -199,7 +199,7 @@ namespace Shared.dto.EventHub
         }
         private void GetCountForSpecificType(DataStorageCredentials pCredentials)
         {
-            string sql = "select count(*) from [dbo].[UpdatesStreamAnalytics] where [type] = " + this.TestType;
+            string sql = "select count(*) from [dbo].[UpdatesCloudTable] where [type] like '%" + this.TestType + "%'";
 
             this.RunSqlQuery(sql, pCredentials, "Event Hub Record Count for Specific Type");
         }

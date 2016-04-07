@@ -222,8 +222,7 @@ namespace Shared.dto.threading
                 Utilities.CloseDbObjects(cmd.Connection, cmd, rdr, null);
             }
 
-            Console.WriteLine("Done with " + msg + "! Result: " + recordCnt.ToString() + DateTime.Now.ToString());
-            Console.WriteLine("There were " + recordCnt.ToString() + " Inserted! " + DateTime.Now.ToString());
+            Console.WriteLine("Done with " + msg + "! Result: " + recordCnt.ToString() + " - " + DateTime.Now.ToString());
         }
     }
 }

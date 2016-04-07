@@ -18,13 +18,16 @@ namespace Driver
 
         #region Queries
 
+        //NOTE:  Each method can be run after the other
         private static void RunQueries()
         {
+            RunEventHubQueries(); 
+            RunAzureSqlServerDbQueries();
             RunBlobQueries();
             RunTableStorageQueries();
-            RunAzureSqlServerDbQueries();
             //RunDocumentDbQueries();
-            RunEventHubQueries();
+
+            Console.Read();  //hold open application
         }
 
         private static void RunBlobQueries()
@@ -34,18 +37,14 @@ namespace Driver
 
             BlobMain m = new BlobMain();
             m.RunQueries(azConnection, azContainterName);
-
-            Console.Read();  //hold open application
         }
         private static void RunTableStorageQueries()
         {
-            string azConnection = "";  
+            string azConnection = "";
             string azContainterName = "dataTableStorage";
 
             TableStorageMain tsm = new TableStorageMain();
             tsm.RunQueries(azConnection, azContainterName);
-
-            Console.Read();  //hold open application
         }
         private static void RunAzureSqlServerDbQueries()
         {
@@ -54,8 +53,6 @@ namespace Driver
             string dbConnection = "";
             SqlServerDbMain ssd = new SqlServerDbMain();
             ssd.RunQueries(dbConnection);
-
-            Console.Read();  //hold open application
         }
         private static async void RunDocumentDbQueries()
         {
@@ -64,24 +61,22 @@ namespace Driver
 
             DocumentDatabaseMain ddm = new DocumentDatabaseMain();
             ddm.RunQueries(EndpointUrl, AuthorizationKey);
-
-            Console.Read();  //hold open application
         }
         private static async void RunEventHubQueries()
         {
             string dbConnection = "";
             EventHub.EventHub eh = new EventHub.EventHub(dbConnection);
-
-            Console.Read();  //hold open application
+            eh.RunQueries();
         }
 
         #endregion
 
         #region Data Loads
 
+        //NOTE:  Each data load is meant to be run seperately from the others.  Each load is multi-threaded
         private static void RunDataLoads()
         {
-            //RunBlob();
+            RunBlob();
             //RunTableStorage();
             //RunAzureSqlServerDb();
             //RunEventHub();
@@ -101,7 +96,7 @@ namespace Driver
             Console.Read();  //hold open application
 
             Console.WriteLine("Blob Done! " + DateTime.Now.ToString());
-        }        
+        }
         private static void RunTableStorage()
         {
             Console.WriteLine("Starting TableStorage Data Load " + DateTime.Now.ToString());

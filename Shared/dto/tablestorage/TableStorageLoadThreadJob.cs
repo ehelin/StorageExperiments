@@ -95,7 +95,7 @@ namespace Shared.dto.tablestorage
 
         private void GetTotalRecordCount(DataStorageCredentials pCredentials)
         {
-            TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)Credentials;
+            TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)pCredentials;
             CloudTable table = Utilities.GetTableStorageContainer(false, tsc.azureConnectionString, tsc.azureContainerName);
             List<long> updates = null;
 
@@ -116,7 +116,7 @@ namespace Shared.dto.tablestorage
         private void GetSpecificId(DataStorageCredentials pCredentials)
         {
             bool recordExists = false;
-            TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)Credentials;
+            TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)pCredentials;
             CloudTable table = Utilities.GetTableStorageContainer(false, tsc.azureConnectionString, tsc.azureContainerName);
             List<long> updates = null;
 
@@ -140,7 +140,7 @@ namespace Shared.dto.tablestorage
         }
         private void GetCountForSpecificType(DataStorageCredentials pCredentials)
         {
-            TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)Credentials;
+            TableStorageDataStorageCredentials tsc = (TableStorageDataStorageCredentials)pCredentials;
             CloudTable table = Utilities.GetTableStorageContainer(false, tsc.azureConnectionString, tsc.azureContainerName);
             List<long> updates = null;
 
@@ -148,9 +148,15 @@ namespace Shared.dto.tablestorage
 
             try
             {
+                //Fails****
                 updates = (from update in table.CreateQuery<SourceRecordTableStorage>()
-                           where update.Type.Equals(this.TestType)
+                           where update.Type == this.TestType
                            select update.Id).ToList<long>();
+
+                //TODO - find alternative way to search for type...indexof throw 'not implemented' error
+                //updates = (from update in table.CreateQuery<SourceRecordTableStorage>()
+                //           where update.Type.IndexOf(this.TestType) != -1
+                //           select update.Id).ToList<long>();
             }
             catch (Exception e)
             {
