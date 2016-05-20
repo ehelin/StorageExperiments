@@ -109,6 +109,10 @@
       <Project>{e5c5be99-495f-4c96-a8e4-859ba9d452a8}</Project>
       <Name>DocumentDatabase</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DynamoDb\DynamoDb.csproj">
+      <Project>{0ffdca0f-128b-44a1-816d-0e8588ccb389}</Project>
+      <Name>DynamoDb</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EventHub\EventHub.csproj">
       <Project>{276f85c1-0e51-4802-afda-00c2eb10f96e}</Project>
       <Name>EventHub</Name>

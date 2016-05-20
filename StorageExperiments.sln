@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Driver", "Driver\Driver.csproj", "{AF6714B0-050A-4A3F-9075-09B286FAE20A}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentDatabase", "DocumentDatabase\DocumentDatabase.csproj", "{E5C5BE99-495F-4C96-A8E4-859BA9D452A8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventHub", "EventHub\EventHub.csproj", "{276F85C1-0E51-4802-AFDA-00C2EB10F96E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamoDb", "DynamoDb\DynamoDb.csproj", "{0FFDCA0F-128B-44A1-816D-0E8588CCB389}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,35 +53,12 @@ Global
 		{276F85C1-0E51-4802-AFDA-00C2EB10F96E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{276F85C1-0E51-4802-AFDA-00C2EB10F96E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{276F85C1-0E51-4802-AFDA-00C2EB10F96E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FFDCA0F-128B-44A1-816D-0E8588CCB389}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FFDCA0F-128B-44A1-816D-0E8588CCB389}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FFDCA0F-128B-44A1-816D-0E8588CCB389}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FFDCA0F-128B-44A1-816D-0E8588CCB389}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 8
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://erichelin.visualstudio.com/defaultcollection
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Blob\\Blob.csproj
-		SccProjectName1 = Blob
-		SccLocalPath1 = Blob
-		SccProjectUniqueName2 = Driver\\Driver.csproj
-		SccProjectName2 = Driver
-		SccLocalPath2 = Driver
-		SccProjectUniqueName3 = Shared\\Shared.csproj
-		SccProjectName3 = Shared
-		SccLocalPath3 = Shared
-		SccProjectUniqueName4 = TableStorage\\TableStorage.csproj
-		SccProjectName4 = TableStorage
-		SccLocalPath4 = TableStorage
-		SccProjectUniqueName5 = SqlServerDb\\SqlServerDb.csproj
-		SccProjectName5 = SqlServerDb
-		SccLocalPath5 = SqlServerDb
-		SccProjectUniqueName6 = DocumentDatabase\\DocumentDatabase.csproj
-		SccProjectName6 = DocumentDatabase
-		SccLocalPath6 = DocumentDatabase
-		SccProjectUniqueName7 = EventHub\\EventHub.csproj
-		SccProjectName7 = EventHub
-		SccLocalPath7 = EventHub
 	EndGlobalSection
 EndGlobal

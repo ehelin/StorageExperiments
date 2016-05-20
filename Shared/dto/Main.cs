@@ -4,6 +4,7 @@ using Shared.dto.threading;
 using Shared.dto.blob;
 using Shared.dto.tablestorage;
 using Shared.dto.source;
+using Shared.dto.dynamodb;
 using System.Threading.Tasks;
 
 namespace Shared.dto
@@ -27,8 +28,6 @@ namespace Shared.dto
 
             ThreadJob tj = GetThreadJob(threadCnt, recordsPerThread, curStartId);
             tj.LaunchThreads();
-
-            Console.Read();    //wait for developer to close application
         }
 
         private ThreadJob GetThreadJob(int threadCnt, long recordCount, long startId)
@@ -43,7 +42,10 @@ namespace Shared.dto
                 return new SqlServer.SqlServerLoadThreadJob(this.Credentials, recordCount, startId, threadCnt);
 
             else if (this.StorageType == Enumeration.StorageTypes.TableStorage)
-                return new TableStorageLoadThreadJob(this.Credentials, recordCount, startId, threadCnt);
+                return new TableStorageLoadThreadJob(this.Credentials, recordCount, startId, threadCnt); 
+
+            else if (this.StorageType == Enumeration.StorageTypes.DynamoDb)
+                return new DynamoDbLoadThreadJob(this.Credentials, recordCount, startId, threadCnt);
 
             else
                 throw new Exception("unknown thread job");

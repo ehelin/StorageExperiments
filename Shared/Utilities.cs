@@ -6,6 +6,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using Shared.dto.source;
 using Shared.dto.SqlServer;
+using System.IO;
 using Shared.dto;
 using Microsoft.Azure.Documents.Client;
 
@@ -13,6 +14,27 @@ namespace Shared
 {
     public class Utilities
     {
+        #region IO
+
+        public static void CloseIoObjects(StreamReader sr, StreamWriter sw)
+        {
+            if (sw != null)
+            {
+                sw.Flush();
+                sw.Close();
+                sw.Dispose();
+                sw = null;
+            }
+            if (sr != null)
+            {
+                sr.Close();
+                sr.Dispose();
+                sr = null;
+            }
+        }
+
+        #endregion
+
         #region database 
 
         public static void CloseRdr(SqlDataReader dr)

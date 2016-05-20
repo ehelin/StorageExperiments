@@ -4,6 +4,7 @@ using TableStorage;
 using SqlServerDb;
 using DocumentDatabase;
 using Shared;
+using DynamoDb;
 
 namespace Driver
 {
@@ -11,10 +12,30 @@ namespace Driver
     {
         static void Main(string[] args)
         {
-            //RunDataLoads();
+            RunDataLoads();
             //RunSimpleThreadAsyncAwait();
-            RunQueries();
+            //RunQueries();
+            //RunBlobCreateLargerFiles();
         }
+
+        #region Create Larger Files
+
+        private static void RunBlobCreateLargerFiles()
+        {
+            string azConnection = "";
+
+            string sourceAzContainterName = "datablob";
+            string destAzContainterName = "databloblargerfiles";
+
+            string localPath = "E:\\Temp\\satellite\\";
+            string cloudPath = "";
+            Shared.dto.blob.BlobDataStorageCredentials sourceCredentials = new Shared.dto.blob.BlobDataStorageCredentials(azConnection, sourceAzContainterName);
+            Shared.dto.blob.BlobDataStorageCredentials destinationCredentials = new Shared.dto.blob.BlobDataStorageCredentials(azConnection, destAzContainterName);
+            Blob.CreateLargerFiles clf = new CreateLargerFiles(sourceCredentials, destinationCredentials, localPath, cloudPath);
+            clf.CreateFiles();
+        }
+
+        #endregion
 
         #region Queries
 
@@ -76,13 +97,29 @@ namespace Driver
         //NOTE:  Each data load is meant to be run seperately from the others.  Each load is multi-threaded
         private static void RunDataLoads()
         {
-            RunBlob();
+            RunDynamoDb();
+            //RunBlob();
             //RunTableStorage();
             //RunAzureSqlServerDb();
             //RunEventHub();
             //RunDocumentDb();
         }
 
+        private static void RunDynamoDb()
+        {
+            Console.WriteLine("Starting Dynamo Db Data Load " + DateTime.Now.ToString());
+
+            string accessKey = "";
+            string secretKey = "";
+
+            DynamoDbMain m = new DynamoDbMain(accessKey, secretKey, 32, 23310144);
+            m.Run();
+
+            Console.WriteLine("Dynamo Db Done! " + DateTime.Now.ToString());
+
+            Console.Read();  //hold open application
+
+        }
         private static void RunBlob()
         {
             Console.WriteLine("Starting Blob Data Load " + DateTime.Now.ToString());

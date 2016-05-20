@@ -3,6 +3,8 @@
     public class Constants
     {
         public const int MAX_RETRY = 5;
+
+        public const string DYNAMO_DB_TABLE_NAME = "SatelliteUpdates";
     }
 
     public class SourceDataConstants
