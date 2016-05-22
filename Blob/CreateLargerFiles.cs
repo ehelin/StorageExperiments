@@ -48,7 +48,6 @@ namespace Blob
                         UploadFile(file);
                         this.curByteCnt = 0;
                     }
-
                     ctr++;
                 }
             }

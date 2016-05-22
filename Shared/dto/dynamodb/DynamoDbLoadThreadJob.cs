@@ -5,6 +5,7 @@ using Shared.dto.threading;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon;
+using Amazon.DynamoDBv2.Model;
 
 namespace Shared.dto.dynamodb
 {
@@ -17,7 +18,7 @@ namespace Shared.dto.dynamodb
                                  long startId,
                                  int threadId)
             : base(pCredentials, recordCount, startId, threadId)
-        {}
+        { }
 
         protected async override void RunLoad(int pThreadId, long pRecordCount, DataStorageCredentials pCredentials, long pStartId, long pEndPoint)
         {
@@ -33,7 +34,7 @@ namespace Shared.dto.dynamodb
             long recordCount = pRecordCount;
             long startId = pStartId;
             long endId = pEndPoint;
-            int ctr = 0;   //temp test code to remove
+            int ctr = 0;
             bool done = false;
 
             Console.WriteLine("Thread " + threadId + " (RcrdCnt/Start/End) (" + recordCount.ToString() + "/"
@@ -49,21 +50,19 @@ namespace Shared.dto.dynamodb
                     {
                         Upload(sr, client);
 
-                        //temp test code to remove
-                        if (ctr >= 100000)
-                        {
-                            done = true;
-                            break;
-                        }
-                        else
-                        {
-                            ctr++;
-                        }
+                        //if (ctr >= 1000)
+                        //{
+                        //    done = true;
+                        //    break;
+                        //}
+                        //else
+                        //{
+                        //    ctr++;
+                        //}
                     }
 
-                    //temp test code to remove
-                    if (done)
-                        break;
+                    //if (done)
+                    //    break;
                 }
                 catch (Exception ex)
                 {
@@ -86,7 +85,7 @@ namespace Shared.dto.dynamodb
                 Table satelliteUpdates = Table.LoadTable(client, Constants.DYNAMO_DB_TABLE_NAME);
 
                 Document satelliteUpdate = new Document();
-                satelliteUpdate["SatelliteId"] = name;
+                satelliteUpdate["SatelliteId"] = sr.Id;
                 satelliteUpdate["SatelliteRange"] = name;
 
                 satelliteUpdate["Id"] = sr.Id;
@@ -111,21 +110,32 @@ namespace Shared.dto.dynamodb
         public override void RunCountQueries(DataStorageCredentials pCredentials)
         {
             GetTotalRecordCount(pCredentials);
-            GetSpecificId(pCredentials);
-            GetCountForSpecificType(pCredentials);
+            //GetSpecificId(pCredentials);
+            //GetCountForSpecificType(pCredentials);
         }
         private void GetTotalRecordCount(DataStorageCredentials pCredentials)
         {
             long recordCnt = 0;
-            DynamoDbStorageCredentials cred = (DynamoDbStorageCredentials)Credentials;
-            AmazonDynamoDBClient client = new AmazonDynamoDBClient(cred.accessKey, cred.secretKey, RegionEndpoint.USWest2);
-
-            Console.WriteLine("Starting total dynamo record count! " + DateTime.Now.ToString());
+            DynamoDbStorageCredentials credentials = (DynamoDbStorageCredentials)Credentials;
+            AmazonDynamoDBClient client = new AmazonDynamoDBClient(credentials.accessKey, credentials.secretKey, RegionEndpoint.USWest2);
             Table satelliteUpdates = Table.LoadTable(client, Constants.DYNAMO_DB_TABLE_NAME);
             ScanFilter sc = new ScanFilter();
+
+            sc.AddCondition("SatelliteId", ScanOperator.GreaterThanOrEqual, 0);
             Search srch = satelliteUpdates.Scan(sc);
-            
-            Console.WriteLine("There were " + srch.Count.ToString() + " Inserted! " + DateTime.Now.ToString());
+
+            List<Document> results = new List<Document>();
+            do
+            {
+                results = srch.GetNextSet();
+                foreach (var result in results)
+                {
+                    recordCnt++;
+                }
+
+            } while (!srch.IsDone);
+
+            Console.WriteLine("There were " + recordCnt.ToString() + " Inserted! " + DateTime.Now.ToString());
         }
 
         private void GetSpecificId(DataStorageCredentials pCredentials)
