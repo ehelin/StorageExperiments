@@ -25,6 +25,43 @@ namespace Blob
 
             this.largeFilePath = localPath + "LargeFiles\\";
         }
+        public void WriteBlobFileNames()
+        {
+            CloudBlobContainer srcContainer = Shared.Utilities.GetBlobStorageContainer(sourceCredentials.azureConnectionString, sourceCredentials.azureContainerName, false);
+            StreamWriter sw = null;
+
+            Console.WriteLine("Starting to write blob file names - " + DateTime.Now.ToString());
+
+            long ctr = 0;
+            foreach (IListBlobItem item in srcContainer.ListBlobs(null, false))
+            {
+                if (item.GetType() == typeof(CloudBlockBlob))
+                {
+                    CloudBlockBlob blob = (CloudBlockBlob)item;
+
+                    try
+                    {
+                        sw = new StreamWriter("C:\\temp\\blobFileNames.txt", true);
+                        sw.WriteLine(blob.Name);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Blob file error: " + e.Message);                           
+                    }
+
+                    if (ctr % 1000 == 0)
+                    {
+                        Console.WriteLine("Count is " + ctr.ToString());
+                    }
+                    else
+                    {
+                        ctr++;
+                    }
+                }
+            }
+
+            Console.WriteLine("Writing blob file names done! " + DateTime.Now.ToString());
+        }
 
         public void CreateFiles()
         {
