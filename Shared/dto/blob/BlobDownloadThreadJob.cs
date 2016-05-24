@@ -1,52 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Shared.dto.source;
-using System.Threading.Tasks;
+﻿using Microsoft.WindowsAzure.Storage.Blob;
 using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Linq;
+using System.Collections.Generic;
+using System;
 
 namespace Shared.dto.blob
 {
-    public class BlobDownloadThreadJob 
+    public class BlobDownloadThreadJob : Shared.dto.threading.DownloadThreadJob
     {
-        private DataStorageCredentials credentials;
-        private int threadId;
-        private string fileListPath;
-        
-        public BlobDownloadThreadJob(DataStorageCredentials credentials,
-                                     int threadId, 
-                                     string fileListPath)
+        public BlobDownloadThreadJob() { }
+
+        public BlobDownloadThreadJob(DataStorageCredentials pCredentials, List<string> fileListPath) : base(pCredentials, fileListPath) 
         {
-            this.credentials = credentials;
-            this.threadId = threadId;
+            this.credentials = pCredentials;
             this.fileListPath = fileListPath;
         }
 
-        protected async Task<bool> Download()
+        protected async override void Download(DataStorageCredentials credentials, int threadId, string fileListPath)
+        {
+            DownloadItems(credentials, threadId, fileListPath);
+        }
+        protected async void DownloadItems(DataStorageCredentials credentials, int threadId, string fileListPath)
         {
             BlobDataStorageCredentials blobCred = (BlobDataStorageCredentials)credentials;
             CloudBlobContainer srcContainer = Shared.Utilities.GetBlobStorageContainer(blobCred.azureConnectionString, blobCred.azureContainerName, false);
+            FileInfo fi = new FileInfo(fileListPath);
+            string localPath = fi.DirectoryName;
+            StreamReader sr = null;
 
-            bool goodDownload = false;
-
-            StreamReader sr = new StreamReader(this.fileListPath);
-
-            while (sr.Peek() != -1)
+            try
             {
-                throw new NotImplementedException();
+                sr = new StreamReader(fileListPath);
+
+                while (sr.Peek() != -1)
+                {
+                    string file = sr.ReadLine();
+                    CloudBlockBlob blockBlob = srcContainer.GetBlockBlobReference(file);
+                    DownloadFile(blockBlob, localPath);
+                }
             }
-
-            goodDownload = true;
-
-            return goodDownload;
+            catch (Exception e)
+            {
+                Console.WriteLine("ThreadId: " + threadId.ToString() + ", Error: " + e.Message);
+            }
+            finally
+            {
+                Utilities.CloseIoObjects(sr, null);
+            }
         }
 
         private void DownloadFile(CloudBlockBlob cbb, string localDestPath)
         {
-            string downloadPath = localDestPath + cbb.Name + "_downloaded.json";
+            string downloadPath = localDestPath + "\\" + cbb.Name + "_downloaded.json";
+
+            if (File.Exists(downloadPath))
+            {
+                File.Delete(downloadPath);
+            }
 
             using (var fileStream = System.IO.File.OpenWrite(downloadPath))
             {

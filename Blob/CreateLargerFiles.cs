@@ -6,6 +6,8 @@ using System.Text;
 using System.Collections.Generic;
 using Shared;
 using System.Linq;
+using System.Threading.Tasks;
+using Shared.dto.threading;
 
 namespace Blob
 {
@@ -35,6 +37,148 @@ namespace Blob
             this.largeFilePath = localPath + "LargeFiles\\";
         }
 
+        public void WriteBlobFileNames()
+        {
+            CloudBlobContainer srcContainer = Shared.Utilities.GetBlobStorageContainer(sourceCredentials.azureConnectionString, sourceCredentials.azureContainerName, false);
+            StreamWriter sw = null;
+
+            WriteBlobFileNamesSetup();
+
+            long ctr = 0;
+            try
+            {
+                sw = new StreamWriter(this.localPathFileName, true);
+
+                foreach (IListBlobItem item in srcContainer.ListBlobs(null, false))
+                {
+                    if (item.GetType() == typeof(CloudBlockBlob))
+                    {
+                        CloudBlockBlob blob = (CloudBlockBlob)item;
+                        sw.WriteLine(blob.Name);
+
+                        if (ctr % 100000 == 0)
+                            Console.WriteLine("Count: " + ctr.ToString() + "-" + DateTime.Now.ToString());
+
+                        ctr++;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error: " + e.Message);
+            }
+            finally
+            {
+                Utilities.CloseIoObjects(null, sw);
+            }
+
+            Console.WriteLine("Writing blob file names done! " + DateTime.Now.ToString());
+        }
+        public void SeperateFileNamesIntoDirectories()
+        {
+            Dictionary<string, Dictionary<string, int>> threadPaths = PopulateDownloadThreadPaths();
+            StreamReader sr = null;
+
+            try
+            {
+                sr = new StreamReader(localPathFileName);
+                string lastThread = string.Empty;
+
+                long ctr = 0;
+                while (sr.Peek() != -1)
+                {
+                    string line = sr.ReadLine();
+                    WriteEntry(line, threadPaths);
+
+                    if (ctr % 100000 == 0)
+                    {
+                        ListCounts(threadPaths);
+                    }
+
+                    ctr++;
+                }
+
+                Console.WriteLine("Done!");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Blob Download Error: " + e.Message);
+            }
+            finally
+            {
+                Utilities.CloseIoObjects(sr, null);
+            }
+
+            Console.Read();
+        }
+
+
+        public void DownloadFilesIntoDirectories()
+        {
+            List<string> directoryFileNames = GetDirectoryFileNames();
+            DownloadThreadJob dtj = new BlobDownloadThreadJob(this.sourceCredentials, directoryFileNames);
+            dtj.LaunchThreads();
+        }
+        
+        public void CreateFiles()
+        {
+            CloudBlobContainer srcContainer = Shared.Utilities.GetBlobStorageContainer(sourceCredentials.azureConnectionString, sourceCredentials.azureContainerName, false);
+            ClearDirectory(largeFilePath);
+
+            long ctr = 0;
+            foreach (IListBlobItem item in srcContainer.ListBlobs(null, false))
+            {
+                if (item.GetType() == typeof(CloudBlockBlob))
+                {
+                    CloudBlockBlob blob = (CloudBlockBlob)item;
+                    long filesize = DownloadFile(blob, localPath);
+
+                    this.curByteCnt += filesize;
+
+                    //http://www.catalystsecure.com/blog/2011/05/how-many-bytes-in-a-gigabyte-my-answer-might-surprise-you/
+                    if (this.curByteCnt >= 1073741824)
+                    {
+                        string file = CreateOneFile(localPath);
+                        UploadFile(file);
+                        this.curByteCnt = 0;
+                    }
+                    ctr++;
+                }
+            }
+
+            if (this.curByteCnt >= 0)
+            {
+                string file = CreateOneFile(localPath);
+                UploadFile(file);
+            }
+        }
+
+
+        #region Private methods
+
+        private List<string> GetDirectoryFileNames()
+        {
+            List<string> directoryFileNames = new List<string>();
+
+            directoryFileNames.Add(this.localPath + "\\EastStatusUpdate\\EastStatusUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\WestStatusUpdate\\WestStatusUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\NorthStatusUpdate\\NorthStatusUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\SouthStatusUpdate\\SouthStatusUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\NorthEastStatusUpdate\\NorthEastStatusUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\NorthWestStatusUpdate\\NorthWestStatusUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\SouthWestStatusUpdate\\SouthWestStatusUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\SouthEastStatusUpdate\\SouthEastStatusUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\EastClientUpdate\\EastClientUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\WestClientUpdate\\WestClientUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\NorthClientUpdate\\NorthClientUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\SouthClientUpdate\\SouthClientUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\NorthEastClientUpdate\\NorthEastClientUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\NorthWestClientUpdate\\NorthWestClientUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\SouthWestClientUpdate\\SouthWestClientUpdateFiles.txt");
+            directoryFileNames.Add(this.localPath + "\\SouthEastClientUpdate\\SouthEastClientUpdateFiles.txt");
+
+            return directoryFileNames;
+        }
         private void WriteFileEntry(string line, Dictionary<string, Dictionary<string, int>> threadPaths, string key)
         {
             StreamWriter sw = null;
@@ -94,7 +238,6 @@ namespace Blob
             else
                 throw new Exception("unknown thread path");
         }
-
         private void ListCounts(Dictionary<string, Dictionary<string, int>> threadPaths)
         {
             Console.WriteLine("");
@@ -105,7 +248,6 @@ namespace Blob
                 Console.WriteLine(threadPath.Key + "-" + count.Value);
             }
         }
-
         private void WriteBlobFileNamesSetup()
         {
             Console.WriteLine("Starting to write blob file names - " + DateTime.Now.ToString());
@@ -114,83 +256,7 @@ namespace Blob
                 File.Delete(this.localPathFileName);
 
             File.Create(this.localPathFileName).Close();
-        }
-        public void WriteBlobFileNames()
-        {
-            CloudBlobContainer srcContainer = Shared.Utilities.GetBlobStorageContainer(sourceCredentials.azureConnectionString, sourceCredentials.azureContainerName, false);
-            StreamWriter sw = null;
-
-            WriteBlobFileNamesSetup();
-
-            long ctr = 0;
-            try
-            {
-                sw = new StreamWriter(this.localPathFileName, true);
-
-                foreach (IListBlobItem item in srcContainer.ListBlobs(null, false))
-                {
-                    if (item.GetType() == typeof(CloudBlockBlob))
-                    {
-                        CloudBlockBlob blob = (CloudBlockBlob)item;
-                        sw.WriteLine(blob.Name);
-
-                        if (ctr % 100000 == 0)
-                            Console.WriteLine("Count: " + ctr.ToString() + "-" + DateTime.Now.ToString());
-
-                        ctr++;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error: " + e.Message);
-            }
-            finally
-            {
-                Utilities.CloseIoObjects(null, sw);
-            }
-
-            Console.WriteLine("Writing blob file names done! " + DateTime.Now.ToString());
-        }
-
-        public void SeperateFileNamesIntoDirectories()
-        {
-            Dictionary<string, Dictionary<string, int>> threadPaths = PopulateDownloadThreads();
-            StreamReader sr = null;
-
-            try
-            {
-                sr = new StreamReader(localPathFileName);
-                string lastThread = string.Empty;
-
-                long ctr = 0;
-                while (sr.Peek() != -1)
-                {
-                    string line = sr.ReadLine();
-                    WriteEntry(line, threadPaths);
-
-                    if (ctr % 100000 == 0)
-                    {
-                        ListCounts(threadPaths);
-                    }
-
-                    ctr++;
-                }
-
-                Console.WriteLine("Done!");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Blob Download Error: " + e.Message);
-            }
-            finally
-            {
-                Utilities.CloseIoObjects(sr, null);
-            }
-
-            Console.Read();
-        }
-
+        }    
         private Dictionary<string, Dictionary<string, int>> Add(string key, string path, Dictionary<string, Dictionary<string, int>> threadPaths)
         {
             Dictionary<string, int> pathCount = new Dictionary<string, int>();
@@ -211,11 +277,11 @@ namespace Blob
 
             return threadPaths;
         }
-
-        private Dictionary<string, Dictionary<string, int>> PopulateDownloadThreads()
+        private Dictionary<string, Dictionary<string, int>> PopulateDownloadThreadPaths()
         {
             Dictionary<string, Dictionary<string, int>> threadPaths = new Dictionary<string, Dictionary<string, int>>();
 
+            //NOTE: Refactor to include getting filename paths from  GetDirectoryFileNames()
             threadPaths = Add("_East_StatusUpdate_", this.localPath + "\\EastStatusUpdate\\EastStatusUpdateFiles.txt", threadPaths);
             threadPaths = Add("_West_StatusUpdate_", this.localPath + "\\WestStatusUpdate\\WestStatusUpdateFiles.txt", threadPaths);
             threadPaths = Add("_North_StatusUpdate_", this.localPath + "\\NorthStatusUpdate\\NorthStatusUpdateFiles.txt", threadPaths);
@@ -235,40 +301,6 @@ namespace Blob
 
             return threadPaths;
         }
-
-        public void CreateFiles()
-        {
-            CloudBlobContainer srcContainer = Shared.Utilities.GetBlobStorageContainer(sourceCredentials.azureConnectionString, sourceCredentials.azureContainerName, false);
-            ClearDirectory(largeFilePath);
-
-            long ctr = 0;
-            foreach (IListBlobItem item in srcContainer.ListBlobs(null, false))
-            {
-                if (item.GetType() == typeof(CloudBlockBlob))
-                {
-                    CloudBlockBlob blob = (CloudBlockBlob)item;
-                    long filesize = DownloadFile(blob, localPath);
-
-                    this.curByteCnt += filesize;
-
-                    //http://www.catalystsecure.com/blog/2011/05/how-many-bytes-in-a-gigabyte-my-answer-might-surprise-you/
-                    if (this.curByteCnt >= 1073741824)
-                    {
-                        string file = CreateOneFile(localPath);
-                        UploadFile(file);
-                        this.curByteCnt = 0;
-                    }
-                    ctr++;
-                }
-            }
-
-            if (this.curByteCnt >= 0)
-            {
-                string file = CreateOneFile(localPath);
-                UploadFile(file);
-            }
-        }
-
         private string CreateOneFile(string localPath)
         {
             string loadFile = "LargeFile" + LargeFileCtr.ToString() + ".json";
@@ -369,5 +401,7 @@ namespace Blob
             foreach (string file in files)
                 File.Delete(file);
         }
+
+        #endregion
     }
 }

@@ -126,6 +126,7 @@
     <Compile Include="dto\tablestorage\SourceRecordTableStorage.cs" />
     <Compile Include="dto\tablestorage\TableStorageDataStorageCredentials.cs" />
     <Compile Include="dto\tablestorage\TableStorageLoadThreadJob.cs" />
+    <Compile Include="dto\threading\DownloadThreadJob.cs" />
     <Compile Include="dto\threading\ThreadJob.cs" />
     <Compile Include="Enumeration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
