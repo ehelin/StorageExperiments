@@ -36,11 +36,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AWSSDK.Core, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\packages\AWSSDK.Core.3.1.4.3\lib\net45\AWSSDK.Core.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.Core.3.1.5.3\lib\net45\AWSSDK.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="AWSSDK.DynamoDBv2, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
       <HintPath>..\packages\AWSSDK.DynamoDBv2.3.1.4.0\lib\net45\AWSSDK.DynamoDBv2.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AWSSDK.S3, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\packages\AWSSDK.S3.3.1.6.1\lib\net45\AWSSDK.S3.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Azure.Documents.Client, Version=1.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -98,6 +102,7 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="dto\blob\BlobDataStorageCredentials.cs" />
+    <Compile Include="dto\blob\BlobDownloadThreadJob.cs" />
     <Compile Include="dto\blob\BlobLoadThreadJob.cs" />
     <Compile Include="dto\DataStorageCredentials.cs" />
     <Compile Include="dto\documentdb\DocumentDbDataStorageCredentials.cs" />
@@ -108,6 +113,8 @@
     <Compile Include="dto\eventhub\EventHubStorageCredentials.cs" />
     <Compile Include="dto\eventhub\SourceRecordEventHub.cs" />
     <Compile Include="dto\Main.cs" />
+    <Compile Include="dto\s3\s3LoadThreadJob.cs" />
+    <Compile Include="dto\s3\s3StorageCredentials.cs" />
     <Compile Include="dto\source\Position.cs" />
     <Compile Include="dto\source\SatelliteClient.cs" />
     <Compile Include="dto\source\SourceData.cs" />
@@ -127,6 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\AWSSDK.DynamoDBv2.3.1.4.0\analyzers\dotnet\cs\AWSSDK.DynamoDBv2.CodeAnalysis.dll" />
+    <Analyzer Include="..\packages\AWSSDK.S3.3.1.6.1\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

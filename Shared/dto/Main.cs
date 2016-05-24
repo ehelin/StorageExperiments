@@ -47,6 +47,9 @@ namespace Shared.dto
             else if (this.StorageType == Enumeration.StorageTypes.DynamoDb)
                 return new DynamoDbLoadThreadJob(this.Credentials, recordCount, startId, threadCnt);
 
+            else if (this.StorageType == Enumeration.StorageTypes.S3)
+                return new s3.s3LoadThreadJob(this.Credentials, recordCount, startId, threadCnt);
+
             else
                 throw new Exception("unknown thread job");
         }

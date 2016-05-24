@@ -5,6 +5,7 @@
         public const int MAX_RETRY = 5;
 
         public const string DYNAMO_DB_TABLE_NAME = "SatelliteUpdates";
+        public const string S3_BUCKET_NAME = "satelliteupdates";
     }
 
     public class SourceDataConstants

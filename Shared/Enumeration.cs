@@ -2,6 +2,6 @@
 {
     public class Enumeration
     {
-        public enum StorageTypes { Blob, TableStorage, SqlServer, EventHub, DocumentDb, DynamoDb }
+        public enum StorageTypes { Blob, TableStorage, SqlServer, EventHub, DocumentDb, DynamoDb, S3 }
     }
 }

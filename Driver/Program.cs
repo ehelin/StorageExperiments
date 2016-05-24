@@ -5,6 +5,7 @@ using SqlServerDb;
 using DocumentDatabase;
 using Shared;
 using DynamoDb;
+using S3;
 
 namespace Driver
 {
@@ -27,12 +28,16 @@ namespace Driver
             string sourceAzContainterName = "datablob";
             string destAzContainterName = "databloblargerfiles";
 
-            string localPath = "E:\\Temp\\satellite\\";
+            string localPathFileName = "C:\\temp\\test\\blobFileNames.txt";
+            string localPath = "C:\\temp\\test";
             string cloudPath = "";
+            
             Shared.dto.blob.BlobDataStorageCredentials sourceCredentials = new Shared.dto.blob.BlobDataStorageCredentials(azConnection, sourceAzContainterName);
             Shared.dto.blob.BlobDataStorageCredentials destinationCredentials = new Shared.dto.blob.BlobDataStorageCredentials(azConnection, destAzContainterName);
-            Blob.CreateLargerFiles clf = new CreateLargerFiles(sourceCredentials, destinationCredentials, localPath, cloudPath);
-            clf.CreateFiles();
+            Blob.CreateLargerFiles clf = new CreateLargerFiles(sourceCredentials, destinationCredentials, localPath, cloudPath, localPathFileName);
+            clf.WriteBlobFileNames();
+            clf.SeperateFileNamesIntoDirectories();
+            //clf.CreateFiles();
         }
 
         #endregion
@@ -42,7 +47,7 @@ namespace Driver
         //NOTE:  Each method can be run after the other
         private static void RunQueries()
         {
-            RunEventHubQueries(); 
+            RunEventHubQueries();
             RunAzureSqlServerDbQueries();
             RunBlobQueries();
             RunTableStorageQueries();
@@ -97,7 +102,8 @@ namespace Driver
         //NOTE:  Each data load is meant to be run seperately from the others.  Each load is multi-threaded
         private static void RunDataLoads()
         {
-            RunDynamoDb();
+            RunS3();
+            //RunDynamoDb();
             //RunBlob();
             //RunTableStorage();
             //RunAzureSqlServerDb();
@@ -105,6 +111,21 @@ namespace Driver
             //RunDocumentDb();
         }
 
+        private static void RunS3()
+        {
+            Console.WriteLine("Starting S3 Data Load " + DateTime.Now.ToString());
+
+            string accessKey = "";
+            string secretKey = "";
+
+            S3Main m = new S3Main(accessKey, secretKey, 32, 23310144);
+            m.Run();
+
+            Console.WriteLine("S3 Done! " + DateTime.Now.ToString());
+
+            Console.Read();  //hold open application
+
+        }
         private static void RunDynamoDb()
         {
             Console.WriteLine("Starting Dynamo Db Data Load " + DateTime.Now.ToString());
