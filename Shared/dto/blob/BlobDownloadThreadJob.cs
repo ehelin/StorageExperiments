@@ -27,6 +27,8 @@ namespace Shared.dto.blob
             string localPath = fi.DirectoryName;
             StreamReader sr = null;
 
+            Console.WriteLine("Download Thread " + threadId.ToString() + " starting! " + DateTime.Now.ToString());
+
             try
             {
                 sr = new StreamReader(fileListPath);
@@ -46,6 +48,8 @@ namespace Shared.dto.blob
             {
                 Utilities.CloseIoObjects(sr, null);
             }
+
+            Console.WriteLine("Download Thread " + threadId.ToString() + " Complete! " + DateTime.Now.ToString());
         }
 
         private void DownloadFile(CloudBlockBlob cbb, string localDestPath)

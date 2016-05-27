@@ -1,10 +1,8 @@
 ﻿using Shared;
-using System.Collections.Generic;
 using Shared.dto.s3;
 using System;
 using Amazon;
 using Amazon.S3;
-using Amazon.S3.IO;
 using Amazon.S3.Model;
 
 namespace S3
@@ -35,10 +33,7 @@ namespace S3
 
             Console.WriteLine("Setting up bucket...");
             DeleteBucket(client);
-            CreateBucket(client);
-
-            //Console.WriteLine("Starting to wait for table to be ready...");
-            //System.Threading.Thread.Sleep(300000); //wait for new table to be ready for input
+            CreateBucket(client);           
 
             Console.WriteLine("Done waiting...starting data load!");
             RunExample();

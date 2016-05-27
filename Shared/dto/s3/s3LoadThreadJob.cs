@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using Shared.dto.source;
 using Shared.dto.threading;
-using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DocumentModel;
 using Amazon;
 using Amazon.S3;
-using Amazon.S3.IO;
 using Amazon.S3.Model;
 
 namespace Shared.dto.s3
@@ -37,8 +34,6 @@ namespace Shared.dto.s3
             long recordCount = pRecordCount;
             long startId = pStartId;
             long endId = pEndPoint;
-            int ctr = 0;
-            bool done = false;
 
             Console.WriteLine("Thread " + threadId + " (RcrdCnt/Start/End) (" + recordCount.ToString() + "/"
                                 + startId.ToString() + "/" + endId.ToString() + ")" + DateTime.Now.ToString());
@@ -91,84 +86,66 @@ namespace Shared.dto.s3
             }
         }
 
+        //NOTE:  A little different from the other implementations...seems better to count all at once looking for my specific queries in that general count
         public override void RunCountQueries(DataStorageCredentials pCredentials)
         {
-            GetTotalRecordCount(pCredentials);
-            //GetSpecificId(pCredentials);
-            //GetCountForSpecificType(pCredentials);
-        }
-        private void GetTotalRecordCount(DataStorageCredentials pCredentials)
-        {
+            DateTime start = DateTime.Now;
+            bool specificRecordFnd = false;
+            long specificTypeRecordCnt = 0;
             long recordCnt = 0;
+            bool done = false;
+
             s3StorageCredentials credentials = (s3StorageCredentials)Credentials;
             AmazonS3Client client = new AmazonS3Client(credentials.accessKey, credentials.secretKey, RegionEndpoint.USWest2);
-
-
             ListObjectsRequest request = new ListObjectsRequest();
             request.BucketName = Constants.S3_BUCKET_NAME;
-            ListObjectsResponse response = client.ListObjects(request);
-            foreach (S3Object o in response.S3Objects)
+
+            while (!done)
             {
-                recordCnt++;
+                ListObjectsResponse response = client.ListObjects(request);
+                foreach (S3Object o in response.S3Objects)
+                {
+                    if (o.Key.IndexOf(this.TestRecordId.ToString()) != -1)
+                    {
+                        specificRecordFnd = true;
+                    }
+
+                    if (o.Key.IndexOf(this.TestType) != -1)
+                    {
+                        specificTypeRecordCnt++;
+                    }
+                }
+
+                recordCnt += response.S3Objects.Count;
+                Console.WriteLine("Total Record Count: " + recordCnt.ToString() + " - " + DateTime.Now.ToString());
+
+                request = AnotherMarker(response, request);
+                if (request == null)
+                {
+                    done = true;
+                    break;
+                }
             }
 
-            Console.WriteLine("There were " + recordCnt.ToString() + " Inserted! " + DateTime.Now.ToString());
+            Console.WriteLine("Results: (start/end) - (" + start.ToString() + "/" + DateTime.Now.ToString() + ")");
+            Console.WriteLine("Total Records: " + recordCnt.ToString());
+            Console.WriteLine("Specific Record Found: " + specificRecordFnd.ToString());
+            Console.WriteLine("Specific Record Type Found Count: " + specificTypeRecordCnt.ToString());
         }
 
-        //private void GetSpecificId(DataStorageCredentials pCredentials)
-        //{
-        //    bool recordExists = false;
-        //    BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)pCredentials;
-        //    CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, false);
+        //Based heavily on this post - http://stackoverflow.com/questions/9920804/how-to-list-all-objects-in-amazon-s3-bucket
+        private ListObjectsRequest AnotherMarker(ListObjectsResponse response, ListObjectsRequest request)
+        {
+            if (response.IsTruncated)
+            {
+                request.Marker = response.NextMarker;
+            }
+            else
+            {
+                request = null;
+            }
 
-        //    Console.WriteLine("Starting specific record search in blob storage for id " + this.TestRecordId.ToString() + " - " + DateTime.Now.ToString());
-
-        //    foreach (IListBlobItem item in container.ListBlobs(null, false))
-        //    {
-        //        if (item.GetType() == typeof(CloudBlockBlob))
-        //        {
-        //            CloudBlockBlob blob = (CloudBlockBlob)item;
-
-        //            //Thread1_Db-1000000_East_StatusUpdate_20164517064523768PM
-        //            int start = blob.Name.IndexOf("-");
-        //            string afterDb = blob.Name.Substring(start, blob.Name.Length - start);
-
-        //            int end = afterDb.IndexOf("_");
-        //            string dbIdStr = afterDb.Substring(0, end);
-        //            dbIdStr = dbIdStr.Replace("-", "");
-        //            dbIdStr = dbIdStr.Replace("_", "");
-
-        //            //better test...is the id stored in the blob name?
-        //            if (dbIdStr.Equals(this.TestRecordId.ToString()))
-        //            {
-        //                recordExists = true;
-        //                break;
-        //            }
-        //        }
-        //    }
-
-        //    Console.WriteLine("Record exists (true/false): " + recordExists.ToString() + " - " + DateTime.Now.ToString());
-        //}
-        //private void GetCountForSpecificType(DataStorageCredentials pCredentials)
-        //{
-        //    long recordCnt = 0;
-        //    BlobDataStorageCredentials bsc = (BlobDataStorageCredentials)pCredentials;
-        //    CloudBlobContainer container = Utilities.GetBlobStorageContainer(bsc.azureConnectionString, bsc.azureContainerName, false);
-
-        //    Console.WriteLine("Starting specific record search in blob storage for type " + this.TestType + " - " + DateTime.Now.ToString());
-
-        //    foreach (IListBlobItem item in container.ListBlobs(null, false))
-        //    {
-        //        if (item.GetType() == typeof(CloudBlockBlob))
-        //        {
-        //            CloudBlockBlob blob = (CloudBlockBlob)item;
-
-        //            if (blob.Name.IndexOf(this.TestType) != -1)
-        //                recordCnt++;
-        //        }
-        //    }
-
-        //    Console.WriteLine("There were " + recordCnt.ToString() + " matching the " + this.TestType + " type! " + DateTime.Now.ToString());
-        //}
+            return request;
+        }
     }
 }

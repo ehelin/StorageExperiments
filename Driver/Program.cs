@@ -37,7 +37,10 @@ namespace Driver
             Blob.CreateLargerFiles clf = new CreateLargerFiles(sourceCredentials, destinationCredentials, localPath, cloudPath, localPathFileName);
             clf.WriteBlobFileNames();
             clf.SeperateFileNamesIntoDirectories();
-            //clf.CreateFiles();
+            clf.DownloadFilesIntoDirectories();
+            clf.CreateFiles();
+
+            Console.Read(); //keep prompt open 
         }
 
         #endregion
