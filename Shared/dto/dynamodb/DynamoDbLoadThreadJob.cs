@@ -107,14 +107,12 @@ namespace Shared.dto.dynamodb
             }
         }
 
+        //NOTE:  A little different from the other implementations...seems better to count all at once looking for my specific queries in that general count
         public override void RunCountQueries(DataStorageCredentials pCredentials)
         {
-            GetTotalRecordCount(pCredentials);
-            //GetSpecificId(pCredentials);
-            //GetCountForSpecificType(pCredentials);
-        }
-        private void GetTotalRecordCount(DataStorageCredentials pCredentials)
-        {
+            DateTime start = DateTime.Now;
+            bool specificRecordFnd = false;
+            long specificTypeRecordCnt = 0;
             long recordCnt = 0;
             DynamoDbStorageCredentials credentials = (DynamoDbStorageCredentials)Credentials;
             AmazonDynamoDBClient client = new AmazonDynamoDBClient(credentials.accessKey, credentials.secretKey, RegionEndpoint.USWest2);
@@ -128,23 +126,32 @@ namespace Shared.dto.dynamodb
             do
             {
                 results = srch.GetNextSet();
-                foreach (var result in results)
+                foreach (Document result in results)
                 {
+                    string entryName = result["SatelliteRange"];
+                    
+                    if (entryName.IndexOf(this.TestRecordId.ToString()) != -1)
+                    {
+                        specificRecordFnd = true;
+                    }
+
+                    if (entryName.IndexOf(this.TestType) != -1)
+                    {
+                        specificTypeRecordCnt++;
+                    }
+
+                    if (recordCnt % 100000 == 0)
+                        Console.WriteLine("Current Count: " + recordCnt.ToString() + "-" + DateTime.Now.ToString());
+
                     recordCnt++;
                 }
 
             } while (!srch.IsDone);
 
-            Console.WriteLine("There were " + recordCnt.ToString() + " Inserted! " + DateTime.Now.ToString());
-        }
-
-        private void GetSpecificId(DataStorageCredentials pCredentials)
-        {
-            throw new NotImplementedException();
-        }
-        private void GetCountForSpecificType(DataStorageCredentials pCredentials)
-        {
-            throw new NotImplementedException();
-        }
+            Console.WriteLine("Results: (start/end) - (" + start.ToString() + "/" + DateTime.Now.ToString() + ")");
+            Console.WriteLine("Total Records: " + recordCnt.ToString());
+            Console.WriteLine("Specific Record Found: " + specificRecordFnd.ToString());
+            Console.WriteLine("Specific Record Type Found Count: " + specificTypeRecordCnt.ToString());
+        }     
     }
 }

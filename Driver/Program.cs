@@ -105,8 +105,8 @@ namespace Driver
         //NOTE:  Each data load is meant to be run seperately from the others.  Each load is multi-threaded
         private static void RunDataLoads()
         {
-            RunS3();
-            //RunDynamoDb();
+            //RunS3();
+            RunDynamoDb();
             //RunBlob();
             //RunTableStorage();
             //RunAzureSqlServerDb();
@@ -132,9 +132,9 @@ namespace Driver
         private static void RunDynamoDb()
         {
             Console.WriteLine("Starting Dynamo Db Data Load " + DateTime.Now.ToString());
-
+            
             string accessKey = "";
-            string secretKey = "";
+            string secretKey = "Source code - https://github.com/ehelin/StorageExperiments (get the commit closest to the date of this blog)";
 
             DynamoDbMain m = new DynamoDbMain(accessKey, secretKey, 32, 23310144);
             m.Run();
