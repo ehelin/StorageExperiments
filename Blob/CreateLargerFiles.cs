@@ -26,15 +26,15 @@ namespace Blob
                                  BlobDataStorageCredentials destinationCredentials,
                                  string localPath,
                                  string cloudPath,
-                                 string localPathFileName)
+                                 string localPathFileName,
+                                 string localLargeFilePath)
         {
             this.sourceCredentials = sourceCredentials;
             this.destinationCredentials = destinationCredentials;
             this.localPath = localPath;
             this.cloudPath = cloudPath;
             this.localPathFileName = localPathFileName;
-
-            this.largeFilePath = localPath + "LargeFiles\\";
+            this.largeFilePath = localLargeFilePath;
         }
 
         public void WriteBlobFileNames()
@@ -111,46 +111,19 @@ namespace Blob
 
             Console.Read();
         }
-
-
         public void DownloadFilesIntoDirectories()
         {
             List<string> directoryFileNames = GetDirectoryFileNames();
             DownloadThreadJob dtj = new BlobDownloadThreadJob(this.sourceCredentials, directoryFileNames);
             dtj.LaunchThreads();
         }
-        
-        public void CreateFiles()
+
+        public void CreateLargeFiles()
         {
-            CloudBlobContainer srcContainer = Shared.Utilities.GetBlobStorageContainer(sourceCredentials.azureConnectionString, sourceCredentials.azureContainerName, false);
-            ClearDirectory(largeFilePath);
+            ClearDirectory(this.largeFilePath);
 
-            long ctr = 0;
-            foreach (IListBlobItem item in srcContainer.ListBlobs(null, false))
-            {
-                if (item.GetType() == typeof(CloudBlockBlob))
-                {
-                    CloudBlockBlob blob = (CloudBlockBlob)item;
-                    long filesize = DownloadFile(blob, localPath);
-
-                    this.curByteCnt += filesize;
-
-                    //http://www.catalystsecure.com/blog/2011/05/how-many-bytes-in-a-gigabyte-my-answer-might-surprise-you/
-                    if (this.curByteCnt >= 1073741824)
-                    {
-                        string file = CreateOneFile(localPath);
-                        UploadFile(file);
-                        this.curByteCnt = 0;
-                    }
-                    ctr++;
-                }
-            }
-
-            if (this.curByteCnt >= 0)
-            {
-                string file = CreateOneFile(localPath);
-                UploadFile(file);
-            }
+            CreateLargeThreadJob cltj = new BlobCreateLargeThreadJob(this.localPath, this.largeFilePath);
+            cltj.LaunchThreads();
         }
 
 
@@ -256,7 +229,7 @@ namespace Blob
                 File.Delete(this.localPathFileName);
 
             File.Create(this.localPathFileName).Close();
-        }    
+        }
         private Dictionary<string, Dictionary<string, int>> Add(string key, string path, Dictionary<string, Dictionary<string, int>> threadPaths)
         {
             Dictionary<string, int> pathCount = new Dictionary<string, int>();
@@ -300,46 +273,6 @@ namespace Blob
             threadPaths = Add("_SouthEast_ClientUpdate_", this.localPath + "\\SouthEastClientUpdate\\SouthEastClientUpdateFiles.txt", threadPaths);
 
             return threadPaths;
-        }
-        private string CreateOneFile(string localPath)
-        {
-            string loadFile = "LargeFile" + LargeFileCtr.ToString() + ".json";
-            StreamWriter sw = null;
-            StreamReader sr = null;
-            StringBuilder sb = new StringBuilder();
-            string largeFilePathFile = largeFilePath + loadFile;
-
-            try
-            {
-                sw = new StreamWriter(largeFilePathFile, true);
-
-                foreach (string file in Directory.GetFiles(localPath))
-                {
-                    sb.Clear();
-
-                    sr = new StreamReader(file);
-                    sb.Append(sr.ReadToEnd());
-
-                    sr.Close();
-                    sr.Dispose();
-                    sr = null;
-
-                    sw.WriteLine(sb.ToString());
-                }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                Shared.Utilities.CloseIoObjects(sr, sw);
-            }
-
-            ClearDirectory(localPath);
-            LargeFileCtr++;
-
-            return largeFilePathFile;
         }
         private long DownloadFile(CloudBlockBlob cbb, string localDestPath)
         {

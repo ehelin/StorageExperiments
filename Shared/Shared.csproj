@@ -101,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="dto\blob\BlobCreateLargeThreadJob.cs" />
     <Compile Include="dto\blob\BlobDataStorageCredentials.cs" />
     <Compile Include="dto\blob\BlobDownloadThreadJob.cs" />
     <Compile Include="dto\blob\BlobLoadThreadJob.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="dto\tablestorage\SourceRecordTableStorage.cs" />
     <Compile Include="dto\tablestorage\TableStorageDataStorageCredentials.cs" />
     <Compile Include="dto\tablestorage\TableStorageLoadThreadJob.cs" />
+    <Compile Include="dto\threading\CreateLargeThreadJob.cs" />
     <Compile Include="dto\threading\DownloadThreadJob.cs" />
     <Compile Include="dto\threading\ThreadJob.cs" />
     <Compile Include="Enumeration.cs" />

@@ -13,10 +13,10 @@ namespace Driver
     {
         static void Main(string[] args)
         {
-            RunDataLoads();
+            //RunDataLoads();
             //RunSimpleThreadAsyncAwait();
             //RunQueries();
-            //RunBlobCreateLargerFiles();
+            RunBlobCreateLargerFiles();
         }
 
         #region Create Larger Files
@@ -30,15 +30,16 @@ namespace Driver
 
             string localPathFileName = "C:\\temp\\test\\blobFileNames.txt";
             string localPath = "C:\\temp\\test";
+            string localLargeFileDestination = "C:\\temp\\test\\largefiles";
             string cloudPath = "";
-            
+
             Shared.dto.blob.BlobDataStorageCredentials sourceCredentials = new Shared.dto.blob.BlobDataStorageCredentials(azConnection, sourceAzContainterName);
             Shared.dto.blob.BlobDataStorageCredentials destinationCredentials = new Shared.dto.blob.BlobDataStorageCredentials(azConnection, destAzContainterName);
-            Blob.CreateLargerFiles clf = new CreateLargerFiles(sourceCredentials, destinationCredentials, localPath, cloudPath, localPathFileName);
-            clf.WriteBlobFileNames();
-            clf.SeperateFileNamesIntoDirectories();
-            clf.DownloadFilesIntoDirectories();
-            clf.CreateFiles();
+            Blob.CreateLargerFiles clf = new CreateLargerFiles(sourceCredentials, destinationCredentials, localPath, cloudPath, localPathFileName, localLargeFileDestination);
+            //clf.WriteBlobFileNames();
+            //clf.SeperateFileNamesIntoDirectories();
+            //clf.DownloadFilesIntoDirectories();
+            clf.CreateLargeFiles();
 
             Console.Read(); //keep prompt open 
         }
@@ -105,8 +106,8 @@ namespace Driver
         //NOTE:  Each data load is meant to be run seperately from the others.  Each load is multi-threaded
         private static void RunDataLoads()
         {
-            //RunS3();
-            RunDynamoDb();
+            RunS3();
+            //RunDynamoDb();
             //RunBlob();
             //RunTableStorage();
             //RunAzureSqlServerDb();
@@ -132,9 +133,9 @@ namespace Driver
         private static void RunDynamoDb()
         {
             Console.WriteLine("Starting Dynamo Db Data Load " + DateTime.Now.ToString());
-            
+
             string accessKey = "";
-            string secretKey = "Source code - https://github.com/ehelin/StorageExperiments (get the commit closest to the date of this blog)";
+            string secretKey = "";
 
             DynamoDbMain m = new DynamoDbMain(accessKey, secretKey, 32, 23310144);
             m.Run();
