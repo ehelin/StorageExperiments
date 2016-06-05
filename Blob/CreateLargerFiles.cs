@@ -19,15 +19,15 @@ namespace Blob
         private string cloudPath;
         private string localPathFileName;
         private string largeFilePath;
-        private long curByteCnt = 0;
-        private int LargeFileCtr = 1;
+        private string singleLargeFilePath;
 
         public CreateLargerFiles(BlobDataStorageCredentials sourceCredentials,
                                  BlobDataStorageCredentials destinationCredentials,
                                  string localPath,
                                  string cloudPath,
                                  string localPathFileName,
-                                 string localLargeFilePath)
+                                 string localLargeFilePath,
+                                 string singlelargePath)
         {
             this.sourceCredentials = sourceCredentials;
             this.destinationCredentials = destinationCredentials;
@@ -35,6 +35,7 @@ namespace Blob
             this.cloudPath = cloudPath;
             this.localPathFileName = localPathFileName;
             this.largeFilePath = localLargeFilePath;
+            this.singleLargeFilePath = singlelargePath;
         }
 
         public void WriteBlobFileNames()
@@ -113,45 +114,38 @@ namespace Blob
         }
         public void DownloadFilesIntoDirectories()
         {
-            List<string> directoryFileNames = GetDirectoryFileNames();
+            List<string> directoryFileNames = Utilities.GetDirectoryFileNames(this.localPath);
             DownloadThreadJob dtj = new BlobDownloadThreadJob(this.sourceCredentials, directoryFileNames);
             dtj.LaunchThreads();
         }
-
         public void CreateLargeFiles()
         {
             ClearDirectory(this.largeFilePath);
 
             CreateLargeThreadJob cltj = new BlobCreateLargeThreadJob(this.localPath, this.largeFilePath);
-            cltj.LaunchThreads();
+            cltj.LaunchThreads(false);
         }
+        public void CreateSingleLargeFile()
+        {
+            ClearDirectory(this.singleLargeFilePath);
 
+            CreateLargeThreadJob cltj = new BlobCreateLargeThreadJob(this.largeFilePath, this.singleLargeFilePath);
+            cltj.LaunchThreads(true);
+        }
+        public void UploadFileToBlob(string path)
+        {
+            Console.WriteLine("Writing file to blob - " + DateTime.Now.ToString() + ", path: " + path);
+
+            foreach (string file in Directory.GetFiles(path))
+            {
+                UploadFile(file);
+            }
+
+            Console.WriteLine("Done writing file to blob - " + DateTime.Now.ToString() + ", path: " + path);
+        }
 
         #region Private methods
 
-        private List<string> GetDirectoryFileNames()
-        {
-            List<string> directoryFileNames = new List<string>();
-
-            directoryFileNames.Add(this.localPath + "\\EastStatusUpdate\\EastStatusUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\WestStatusUpdate\\WestStatusUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\NorthStatusUpdate\\NorthStatusUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\SouthStatusUpdate\\SouthStatusUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\NorthEastStatusUpdate\\NorthEastStatusUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\NorthWestStatusUpdate\\NorthWestStatusUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\SouthWestStatusUpdate\\SouthWestStatusUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\SouthEastStatusUpdate\\SouthEastStatusUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\EastClientUpdate\\EastClientUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\WestClientUpdate\\WestClientUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\NorthClientUpdate\\NorthClientUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\SouthClientUpdate\\SouthClientUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\NorthEastClientUpdate\\NorthEastClientUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\NorthWestClientUpdate\\NorthWestClientUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\SouthWestClientUpdate\\SouthWestClientUpdateFiles.txt");
-            directoryFileNames.Add(this.localPath + "\\SouthEastClientUpdate\\SouthEastClientUpdateFiles.txt");
-
-            return directoryFileNames;
-        }
         private void WriteFileEntry(string line, Dictionary<string, Dictionary<string, int>> threadPaths, string key)
         {
             StreamWriter sw = null;

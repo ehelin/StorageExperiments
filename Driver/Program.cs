@@ -32,14 +32,18 @@ namespace Driver
             string localPath = "C:\\temp\\test";
             string localLargeFileDestination = "C:\\temp\\test\\largefiles";
             string cloudPath = "";
+            string singleLargeFilePath = "C:\\temp\\test\\singlelargefile";
 
             Shared.dto.blob.BlobDataStorageCredentials sourceCredentials = new Shared.dto.blob.BlobDataStorageCredentials(azConnection, sourceAzContainterName);
             Shared.dto.blob.BlobDataStorageCredentials destinationCredentials = new Shared.dto.blob.BlobDataStorageCredentials(azConnection, destAzContainterName);
-            Blob.CreateLargerFiles clf = new CreateLargerFiles(sourceCredentials, destinationCredentials, localPath, cloudPath, localPathFileName, localLargeFileDestination);
-            //clf.WriteBlobFileNames();
-            //clf.SeperateFileNamesIntoDirectories();
-            //clf.DownloadFilesIntoDirectories();
+
+            Blob.CreateLargerFiles clf = new CreateLargerFiles(sourceCredentials, destinationCredentials, localPath, cloudPath, localPathFileName, localLargeFileDestination, singleLargeFilePath);
+            clf.WriteBlobFileNames();
+            clf.SeperateFileNamesIntoDirectories();
+            clf.DownloadFilesIntoDirectories();
             clf.CreateLargeFiles();
+            clf.CreateSingleLargeFile();
+            clf.UploadFileToBlob(singleLargeFilePath);
 
             Console.Read(); //keep prompt open 
         }

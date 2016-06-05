@@ -9,12 +9,37 @@ using Shared.dto.SqlServer;
 using System.IO;
 using Shared.dto;
 using Microsoft.Azure.Documents.Client;
+using System.Collections.Generic;
 
 namespace Shared
 {
     public class Utilities
     {
         #region IO
+
+        public static List<string> GetDirectoryFileNames(string localPath)
+        {
+            List<string> directoryFileNames = new List<string>();
+
+            directoryFileNames.Add(localPath + "\\EastClientUpdate\\EastClientUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\WestClientUpdate\\WestClientUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\NorthClientUpdate\\NorthClientUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\SouthClientUpdate\\SouthClientUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\NorthEastClientUpdate\\NorthEastClientUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\NorthWestClientUpdate\\NorthWestClientUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\SouthWestClientUpdate\\SouthWestClientUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\SouthEastClientUpdate\\SouthEastClientUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\EastStatusUpdate\\EastStatusUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\WestStatusUpdate\\WestStatusUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\NorthStatusUpdate\\NorthStatusUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\SouthStatusUpdate\\SouthStatusUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\NorthEastStatusUpdate\\NorthEastStatusUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\NorthWestStatusUpdate\\NorthWestStatusUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\SouthWestStatusUpdate\\SouthWestStatusUpdateFiles.txt");
+            directoryFileNames.Add(localPath + "\\SouthEastStatusUpdate\\SouthEastStatusUpdateFiles.txt");
+
+            return directoryFileNames;
+        }
 
         public static void CloseIoObjects(StreamReader sr, StreamWriter sw)
         {
