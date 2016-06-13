@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS satellite_data_raw;
 CREATE EXTERNAL TABLE satellite_data_raw 
 (satelliteBlobRow string) 
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ''
-STORED AS TEXTFILE LOCATION 'wasb://databloblargerfiles@erichstoragetesting.blob.core.windows.net/';
+STORED AS TEXTFILE LOCATION 'wasb://XXXXXXXXXXXXXXXXXXXXXXXXXXXX@XXXXXXXXXXXXXXXXXXXXXXXXXXXX';
 
 --3) create internal table
 set hive.output.file.extension = .csv;
@@ -69,7 +69,7 @@ CREATE EXTERNAL TABLE satellite_data_parsed
     Created STRING
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ","
-STORED AS TEXTFILE LOCATION 'wasb://databloblargerfiles@erichstoragetesting.blob.core.windows.net/';
+STORED AS TEXTFILE LOCATION 'wasb://XXXXXXXXXXXXXXXXXXXXXXXXXXXX@XXXXXXXXXXXXXXXXXXXXXXXXXXXX';
 
 INSERT INTO TABLE satellite_data_parsed
 SELECT * FROM satellite_data;
