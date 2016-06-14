@@ -32,11 +32,12 @@ namespace S3
             AmazonS3Client client = new AmazonS3Client(cred.accessKey, cred.secretKey, RegionEndpoint.USWest2);
 
             Console.WriteLine("Setting up bucket...");
-            DeleteBucket(client);
-            CreateBucket(client);           
+            //DeleteBucket(client);
+            DeleteS3Records(client);
+            //CreateBucket(client);           
 
-            Console.WriteLine("Done waiting...starting data load!");
-            RunExample();
+            //Console.WriteLine("Done waiting...starting data load!");
+            //RunExample();
         }
 
         private void CreateBucket(AmazonS3Client client)
@@ -68,6 +69,33 @@ namespace S3
             {
                 if (e.Message.IndexOf("The specified bucket does not exist") == -1)
                     throw e;
+            }
+        }
+
+        public void DeleteS3Records(AmazonS3Client client)
+        {
+            bool done = false;
+            ListObjectsRequest request = new ListObjectsRequest();
+            request.BucketName = Constants.S3_BUCKET_NAME;
+
+            while (!done)
+            {
+                ListObjectsResponse response = client.ListObjects(request);
+                foreach (S3Object o in response.S3Objects)
+                {
+                    DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest();
+                    deleteObjectRequest.BucketName = Constants.S3_BUCKET_NAME;
+                    deleteObjectRequest.Key = o.Key;
+
+                    client.DeleteObject(deleteObjectRequest);
+                }
+
+                request = Utilities.AnotherMarker(response, request);
+                if (request == null)
+                {
+                    done = true;
+                    break;
+                }
             }
         }
     }

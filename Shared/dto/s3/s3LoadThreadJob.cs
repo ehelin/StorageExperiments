@@ -119,7 +119,7 @@ namespace Shared.dto.s3
                 recordCnt += response.S3Objects.Count;
                 Console.WriteLine("Total Record Count: " + recordCnt.ToString() + " - " + DateTime.Now.ToString());
 
-                request = AnotherMarker(response, request);
+                request = Utilities.AnotherMarker(response, request);
                 if (request == null)
                 {
                     done = true;
@@ -133,19 +133,5 @@ namespace Shared.dto.s3
             Console.WriteLine("Specific Record Type Found Count: " + specificTypeRecordCnt.ToString());
         }
 
-        //Based heavily on this post - http://stackoverflow.com/questions/9920804/how-to-list-all-objects-in-amazon-s3-bucket
-        private ListObjectsRequest AnotherMarker(ListObjectsResponse response, ListObjectsRequest request)
-        {
-            if (response.IsTruncated)
-            {
-                request.Marker = response.NextMarker;
-            }
-            else
-            {
-                request = null;
-            }
-
-            return request;
-        }
     }
 }

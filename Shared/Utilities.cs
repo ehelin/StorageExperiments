@@ -10,6 +10,9 @@ using System.IO;
 using Shared.dto;
 using Microsoft.Azure.Documents.Client;
 using System.Collections.Generic;
+using Amazon;
+using Amazon.S3;
+using Amazon.S3.Model;
 
 namespace Shared
 {
@@ -17,6 +20,20 @@ namespace Shared
     {
         #region IO
 
+        //Based heavily on this post - http://stackoverflow.com/questions/9920804/how-to-list-all-objects-in-amazon-s3-bucket
+        public static ListObjectsRequest AnotherMarker(ListObjectsResponse response, ListObjectsRequest request)
+        {
+            if (response.IsTruncated)
+            {
+                request.Marker = response.NextMarker;
+            }
+            else
+            {
+                request = null;
+            }
+
+            return request;
+        }
         public static List<string> GetDirectoryFileNames(string localPath)
         {
             List<string> directoryFileNames = new List<string>();
