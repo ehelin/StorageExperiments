@@ -7,6 +7,10 @@ This project was created to explore some of the different Azure and AWS cloud st
 
 These items are also related to this project. 
 <br/>
+
+Blog Posts:
+<br/>
+<br/>
 <a href="https://erichelin.wordpress.com/2016/03/04/blob-event-hub-table-storage-document-db-and-sql-azure-round-1/">Azure storage option comparisons</a>
 <br/>
 <a href="https://erichelin.wordpress.com/2016/04/08/cloud-adventures-part-2-blob-event-hub-table-storage-and-sql-azure-round-2/">Azure storage option comparisons 2</a>
