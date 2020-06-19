@@ -1,7 +1,7 @@
 # Storage Experiments
 A .NET C# Project exploring different cloud storage options.
 
-This project was created to explore some of the different Azure and AWS cloud store options and how they work.
+This project was created to explore some of the different Azure and AWS cloud storage options and how they work.
 
 ## Related Projects/Items
 
